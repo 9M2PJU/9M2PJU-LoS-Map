@@ -1,2 +1,6 @@
-# ham-uhfvhf-map
-Topographic map for calculating line of sight for UHF/VHF radio communication
+python3 -m http.server
+
+
+
+http://localhost:8000
+
