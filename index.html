@@ -1,24 +1,103 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 	
-    <title>UHF/VHF Propagation Calculator</title>
-   <link rel="shortcut icon" type="image/x-icon" href="docs/images/favicon.ico" />
+    <title>UHF/VHF Line-of-Sight Calculator</title>
+   <link rel="shortcut icon" type="image/x-icon" href="favicon.png" />
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>	
 
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+
     <link rel="stylesheet" href="index.css" />
     <script src="index.js"></script>	
 </head>
-<body onLoad="init();">
+<body class="d-flex flex-column h-100">
+    <main class="flex-shrink-0 container-fluid">
+        <div class="container pt-3">
+            <h1>UHF/VHF Line-of-Sight Calculator</h1>
 
+            <p>This tool can help find locations allowing for line-of-sight communications such as UHF (70 centimeter) and VHF (2 meter) amateur radio, where line of sight, particularly obstructions, matters more than atmospheric propagation.</p>
+            <p>Start by entering an address or coordinates for each of the two locations, then drag the markers into position for more details.</p>
+        </div>
 
+        <form id="searchform" onSubmit="return false;" class="container pb-3">
+            <div class="row">
+                <div class="col-12 col-md-6 text-center">
+                    <p class="fw-bold mb-0">Transmitting Location</p>
 
-<div id="map" style="width: 600px; height: 400px;"></div>
+                    <div class="input-group">
+                        <input type="text" name="xaddr" autocomplete="off" placeholder="address or lat,lng" class="form-control" />
+                        <button type="button" class="btn btn-primary" name="xsearchgo">Find</button>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6 text-center">
+                    <p class="fw-bold mb-0">Receiving Location</p>
 
+                    <div class="input-group">
+                        <input type="text" name="raddr" autocomplete="off" placeholder="address or lat,lng" class="form-control" />
+                        <button type="button" class="btn btn-primary" name="rsearchgo">Find</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+        <div class="d-none container pb-3" id="readouts">
+            <div class="row">
+                <div class="col-12 col-md-6">
+                    <div class="border h-100 p-2">
+                        <p class="fw-bold mb-0">Distance and Bearing</p>
+
+                        <p>
+                            Distance: <span data-readout="distance_mi"></span> miles, <span data-readout="distance_km"></span> kilometers
+                            <br />
+                            Horizon: <span data-readout="horizon_mi"></span> miles, <span data-readout="horizon_km"></span> kilometers
+                            <span class="d-none" id="insufficienthorizon">
+                                <br />
+                                The distance is further than the horizon, so successful contact is unlikely.
+                            </span>
+                        </p>
+                        <p>
+                            Ground Elevation, Transmitter: <span data-readout="transmit_elevation_ft"></span> feet, <span data-readout="transmit_elevation_m"></span> meters
+                            <br />
+                            Ground Elevation, Receiver: <span data-readout="receive_elevation_ft"></span> feet, <span data-readout="receive_elevation_m"></span> meters
+                        </p>
+                        <p class="mb-0">
+                            Bearing: <span data-readout="bearing_deg"></span>&deg;, <span data-readout="bearing_txt"></span>
+                        </p>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6">
+                    <div class="border h-100">
+                        <p class="fw-bold mb-0 p-2">Elevation Change</p>
+
+                        <div id="elevationprofile"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="map"></div>
+    </main>
+
+    <footer class="footer mt-auto py-3 px-3">
+        <div class="row">
+            <div class="col-12 col-lg-6 text-start">
+            </div>
+            <div class="col-12 col-lg-6 text-end">
+                2024 Gregor KK7YIZ
+                <br/>
+                <a href="https://github.com/gregallensworth/ham-uhfvhf-map" target="_blank">https://github.com/gregallensworth/ham-uhfvhf-map</a>
+            </div>
+        </div>
+    </footer>
 </body>
 </html>

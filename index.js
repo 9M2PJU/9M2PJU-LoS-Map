@@ -1,40 +1,362 @@
-function init () {
-    const map = L.map('map').setView([51.505, -0.09], 13);
+let MAP;
 
-    const tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-    }).addTo(map);
+const MAPSTART_LAT = 0; // 37.80;
+const MAPSTART_LNG = 0; // -98.50;
+const MAPSTART_ZOOM = 2; // 4.00;
 
-    const marker = L.marker([51.5, -0.09]).addTo(map)
-        .bindPopup('<b>Hello world!</b><br />I am a popup.').openPopup();
+const MAP_MAX_ZOOM = 18;
 
-    const circle = L.circle([51.508, -0.11], {
-        color: 'red',
-        fillColor: '#f03',
-        fillOpacity: 0.5,
-        radius: 500
-    }).addTo(map).bindPopup('I am a circle.');
-
-    const polygon = L.polygon([
-        [51.509, -0.08],
-        [51.503, -0.06],
-        [51.51, -0.047]
-    ]).addTo(map).bindPopup('I am a polygon.');
+const LOOKS_LIKE_COORDS = /^(\-?\d+\.\d+)\s*,(\s*\-?\d+\.\d+)$/;
 
 
-    const popup = L.popup()
-        .setLatLng([51.513, -0.09])
-        .setContent('I am a standalone popup.')
-        .openOn(map);
+// add to Leaflet LatLng the calculation of a compass heading
+L.LatLng.prototype.bearingTo = function(LatLng) {
+    let d2r  = Math.PI / 180;
+    let r2d  = 180 / Math.PI;
+    let lat1 = this.lat * d2r;
+    let lat2 = LatLng.lat * d2r;
+    let dLon = (LatLng.lng-this.lng) * d2r;
+    let y    = Math.sin(dLon) * Math.cos(lat2);
+    let x    = Math.cos(lat1)*Math.sin(lat2) - Math.sin(lat1)*Math.cos(lat2)*Math.cos(dLon);
+    return (parseInt( Math.atan2(y, x) * r2d ) + 360 ) % 360;
+};
 
-    function onMapClick(e) {
-        popup
-            .setLatLng(e.latlng)
-            .setContent(`You clicked the map at ${e.latlng.toString()}`)
-            .openOn(map);
+L.LatLng.prototype.bearingWordTo = function (other) {
+    var bearing = this.bearingTo(other);
+    var bearingword = '';
+    if (bearing >= 22  && bearing <= 67)  bearingword = 'Northeast';
+    else if (bearing >= 67 && bearing <= 112)  bearingword = 'East';
+    else if (bearing >= 112 && bearing <= 157) bearingword = 'Southeast';
+    else if (bearing >= 157 && bearing <= 202) bearingword = 'South';
+    else if (bearing >= 202 && bearing <= 247) bearingword = 'Southwest';
+    else if (bearing >= 247 && bearing <= 292) bearingword = 'West';
+    else if (bearing >= 292 && bearing <= 337) bearingword = 'Northwest';
+    else if (bearing >= 337 || bearing <= 22)  bearingword = 'North';
+    return bearingword;
+};
+
+$(document).ready(function () {
+    const $form = $('#searchform');
+    const $xaddr_input = $form.find('input[name="xaddr"]');
+    const $raddr_input = $form.find('input[name="raddr"]');
+    const $xaddr_go = $form.find('button[name="xsearchgo"]');
+    const $raddr_go = $form.find('button[name="rsearchgo"]');
+
+    //
+    // basic setup of the map and the drag markers
+    //
+
+    MAP = L.map('map').setView([MAPSTART_LAT, MAPSTART_LNG], MAPSTART_ZOOM);
+
+    MAP.basemap = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
+	    attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ, TomTom, Intermap, iPC, USGS, FAO, NPS, NRCAN, GeoBase, Kadaster NL, Ordnance Survey, Esri Japan, METI, Esri China (Hong Kong), and the GIS User Community'
+    }).addTo(MAP);
+
+    MAP.xmarker = L.marker([0, 0], {
+        draggable: true,
+    });
+    MAP.rmarker = L.marker([0, 0], {
+        draggable: true,
+    });
+    MAP.xmarker.on('drag', function () {
+        hideLineOfSight();
+    });
+    MAP.rmarker.on('drag', function () {
+        hideLineOfSight();
+    });
+    MAP.xmarker.on('dragend', function () {
+        const lat = this.getLatLng().lat;
+        const lng = this.getLatLng().lng;
+        $xaddr_input.val(`${lat},${lng}`).change();
+    });
+    MAP.rmarker.on('dragend', function () {
+        const lat = this.getLatLng().lat;
+        const lng = this.getLatLng().lng;
+        $raddr_input.val(`${lat},${lng}`).change();
+    });
+
+    MAP.lineofsight = L.polyline([[0, 0], [0, 0]], {
+        color: 'darkblue',
+    });
+
+    //
+    // address search; position & add the markers
+    //
+
+    $xaddr_input.change(function () {
+        const address = $xaddr_input.val().trim();
+        const coordbits = address.match(LOOKS_LIKE_COORDS);
+        if (! coordbits) return;  // change() is to shift the marker, but only if the input looks like coordinates
+
+        const lat = parseFloat(coordbits[1]);
+        const lng = parseFloat(coordbits[2]);
+        placeTransmitMarker(lat, lng);
+    });
+    $raddr_input.change(function () {
+        const address = $raddr_input.val().trim();
+        const coordbits = address.match(LOOKS_LIKE_COORDS);
+        if (! coordbits) return;  // change() is to shift the marker, but only if the input looks like coordinates
+
+        const lat = parseFloat(coordbits[1]);
+        const lng = parseFloat(coordbits[2]);
+        placeReceiveMarker(lat, lng);
+    });
+
+    $xaddr_input.keyup(function (event) {
+        if (event.key == 'Enter') $xaddr_go.click();
+    });
+    $raddr_input.keyup(function (event) {
+        if (event.key == 'Enter') $raddr_go.click();
+    });
+
+    $xaddr_go.click(function () {
+        const address = $xaddr_input.val().trim();
+        if (! address) return;
+
+        // if it looks like coordinates, skip geocoding; just trigger change()
+        if (address.match(LOOKS_LIKE_COORDS)) return $xaddr_input.change();
+
+        // geocode, fill in coordinates, then trigger change()
+        geocodeAddress(address, function (resultlist) {
+            if (! resultlist || ! resultlist.length) return alert("Could not find that address.");
+
+            const lat = parseFloat(resultlist[0].lat);
+            const lng = parseFloat(resultlist[0].lon);
+            $xaddr_input.val(`${lat},${lng}`).change();
+        });
+    });
+    $raddr_go.click(function () {
+        const address = $raddr_input.val().trim();
+        if (! address) return;
+
+        // if it looks like coordinates, skip geocoding; just trigger change()
+        if (address.match(LOOKS_LIKE_COORDS)) return $raddr_input.change();
+
+        // geocode, fill in coordinates, then trigger change()
+        geocodeAddress(address, function (resultlist) {
+            if (! resultlist || ! resultlist.length) return alert("Could not find that address.");
+
+            const lat = parseFloat(resultlist[0].lat);
+            const lng = parseFloat(resultlist[0].lon);
+            $raddr_input.val(`${lat},${lng}`).change();
+        });
+    });
+
+    //
+    // if there is a hash with xlat,xlng,rlat,rlng then fill the search boxes and submit them now
+    // yeah, you can share a line just by sharing the URL
+    //
+
+    if (document.location.hash) {
+        const coords = document.location.hash.replace(/^#/, '').split(',').map(i => parseFloat(i));
+        if (coords.length == 4 && !isNaN(coords[0]) && !isNaN(coords[1]) && !isNaN(coords[3]) && !isNaN(coords[3])) {    
+            $xaddr_input.val(`${coords[0]},${coords[1]}`).change();
+            $raddr_input.val(`${coords[2]},${coords[3]}`).change();
+        }
     }
+});
 
-    map.on('click', onMapClick);
+
+function geocodeAddress (address, successcallback) {
+    $.ajax({
+        url: 'https://nominatim.openstreetmap.org/search',
+        'data': {
+            q: address,
+            format: 'json',
+            limit: 1,
+        },
+        dataType: 'jsonp',
+        jsonp: 'json_callback',
+        success: successcallback,
+        crossDomain: true
+    });
 }
 
+
+
+function placeTransmitMarker (lat, lng) {
+    MAP.xmarker.setLatLng([lat, lng]).addTo(MAP);
+    if (MAP.hasLayer(MAP.xmarker) && MAP.hasLayer(MAP.rmarker)) updateTheLine();
+}
+
+
+function placeReceiveMarker (lat, lng) {
+    MAP.rmarker.setLatLng([lat, lng]).addTo(MAP);
+    if (MAP.hasLayer(MAP.xmarker) && MAP.hasLayer(MAP.rmarker)) updateTheLine();
+}
+
+
+function hideLineOfSight () {
+    MAP.lineofsight.removeFrom(MAP);
+}
+
+
+function updateTheLine () {
+    placeLineOfSight();
+    updateReadouts();
+    showElevationProfile();
+    updateAddressBar();
+}
+
+
+function placeLineOfSight () {
+    const points = [
+        MAP.xmarker.getLatLng(),
+        MAP.rmarker.getLatLng()
+    ];
+    MAP.lineofsight.setLatLngs(points).addTo(MAP);
+    MAP.fitBounds(MAP.lineofsight.getBounds().pad(0.2));
+}
+
+
+function updateReadouts () {
+    const xlatlng = MAP.xmarker.getLatLng();
+    const rlatlng = MAP.rmarker.getLatLng();
+
+    const distance_km = xlatlng.distanceTo(rlatlng) / 1000.0;
+    const distance_mi = xlatlng.distanceTo(rlatlng) / 1609.34;
+    const bearing_deg = xlatlng.bearingTo(rlatlng);
+    const bearing_txt = xlatlng.bearingWordTo(rlatlng);
+
+    const $readouts = $('#readouts');
+    $readouts.find('span[data-readout="distance_km"]').text(distance_km.toFixed(1));
+    $readouts.find('span[data-readout="distance_mi"]').text(distance_mi.toFixed(1));
+    $readouts.find('span[data-readout="bearing_deg"]').text(bearing_deg);
+    $readouts.find('span[data-readout="bearing_txt"]').text(bearing_txt);
+    $readouts.removeClass('d-none');
+
+    // the elevation points are asynchronous
+    // thank you, Open-Elevation!
+    $.ajax({
+        url: 'https://api.open-elevation.com/api/v1/lookup',
+        'data': {
+            locations: `${xlatlng.lat},${xlatlng.lng}|${rlatlng.lat},${rlatlng.lng}`,
+        },
+        success: function (response) {
+            const transmit_elevation_m = response.results[0].elevation;
+            const transmit_elevation_ft = Math.round(response.results[0].elevation / 0.3048);
+            const receive_elevation_m = response.results[1].elevation;
+            const receive_elevation_ft = Math.round(response.results[1].elevation / 0.3048);
+
+            const pyth1 = Math.pow(transmit_elevation_m + 6378137, 2) - 40680631590769;
+            const pyth2 = Math.pow(receive_elevation_m + 6378137, 2) - 40680631590769;
+            const horizon_km = ((Math.sqrt(pyth1) + Math.sqrt(pyth2)) / 1000.0).toFixed(1);
+            const horizon_mi = ((Math.sqrt(pyth1) + Math.sqrt(pyth2)) / 1609.34).toFixed(1);
+
+            $readouts.find('span[data-readout="transmit_elevation_m"]').text(transmit_elevation_m);
+            $readouts.find('span[data-readout="transmit_elevation_ft"]').text(transmit_elevation_ft);
+            $readouts.find('span[data-readout="receive_elevation_m"]').text(receive_elevation_m);
+            $readouts.find('span[data-readout="receive_elevation_ft"]').text(receive_elevation_ft);
+            $readouts.find('span[data-readout="horizon_mi"]').text(horizon_mi);
+            $readouts.find('span[data-readout="horizon_km"]').text(horizon_km);
+
+            const $insufficienthorizon = $('#insufficienthorizon');
+            if (distance_km > horizon_km) $insufficienthorizon.removeClass('d-none');
+            else $insufficienthorizon.addClass('d-none');
+        },
+    });
+}
+
+
+function showElevationProfile () {
+    const xlatlng = MAP.xmarker.getLatLng();
+    const rlatlng = MAP.rmarker.getLatLng();
+    const xlat = xlatlng.lat;
+    const xlng = xlatlng.lng;
+    const rlat = rlatlng.lat;
+    const rlng = rlatlng.lng;
+
+    const howmanypoints = 50;
+    const totalmeters = xlatlng.distanceTo(rlatlng);
+
+    // generate X points along the straight line; a list of [[lat,lng,distance], [lat,lng,distance], [lat,lng,distance]...]
+    // the lat,lng will be for elevation (Y axis) and distance along the line will form the X axis
+    const points = [];
+    const latstep = (rlat - xlat) / howmanypoints;
+    const lngstep = (rlng - xlng) / howmanypoints;
+    const lenstep = totalmeters / howmanypoints;  // meters
+
+    points.push([xlat, xlng, 0]);
+    for (let i = 1; i <= howmanypoints; i++) {
+        const lat = xlat + (i * latstep);
+        const lng = xlng + (i * lngstep);
+        const m = lenstep * i;
+        points.push([lat, lng, m]);
+    }
+
+    // hand off to the elevation API
+    // thank you, Open-Elevation!
+    $.ajax({
+        url: 'https://api.open-elevation.com/api/v1/lookup',
+        'data': {
+            locations: points.map(p => `${p[0]},${p[1]}`).join('|'),
+        },
+        success: function (response) {
+            // the results are a set of {latitude, longitude, elevation} objects
+            // remap this to Highcharts-compatible dicts with a "y" attribute for the chart and other attributes for tooltips
+            const chartpoints = response.results.map((point, i) => {
+                return {
+                    y: point.elevation,
+                    distance_km: (i * lenstep / 1000.0).toFixed(1),
+                    distance_mi: (i * lenstep / 1609.43).toFixed(1),
+                    elevation_ft: Math.round(point.elevation / 0.3048),
+                    elevation_m: Math.round(point.elevation),
+                };
+            });
+
+            // hand off to Highcharts
+            Highcharts.setOptions({
+                plotOptions: {
+                    series: {
+                        animation: false,
+                    },
+                },
+            });
+
+            Highcharts.chart('elevationprofile', {
+                chart: {
+                    type: 'area',
+                },
+                title: {
+                    text: "",
+                },
+                yAxis: {
+                    visible: false,
+                },
+                xAxis: {
+                    visible: false,
+                },
+                legend: {
+                    enabled: false,
+                },
+                tooltip: {
+                    formatter: function () {
+                        return `<strong>Distance:</strong> ${this.point.options.distance_mi} miles, ${this.point.options.distance_km} kilometers<br/><strong>Elevation:</strong> ${this.point.options.elevation_ft} feet, ${this.point.options.elevation_m} meters`;
+                    },
+                },
+                plotOptions: {
+                    area: {
+                        marker: {
+                            enabled: false,
+                        },
+                    },
+                },
+                series: [
+                    { data: chartpoints, },
+                ],
+            });
+        },
+    });
+}
+
+
+function updateAddressBar () {
+    const xlatlng = MAP.xmarker.getLatLng();
+    const rlatlng = MAP.rmarker.getLatLng();
+    const xlat = xlatlng.lat;
+    const xlng = xlatlng.lng;
+    const rlat = rlatlng.lat;
+    const rlng = rlatlng.lng;
+
+    document.location.hash = `${xlat},${xlng},${rlat},${rlng}`;
+}
