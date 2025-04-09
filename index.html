@@ -27,6 +27,7 @@
 
             <p>This tool can help find locations allowing for line-of-sight communications such as UHF (70 centimeter) and VHF (2 meter) amateur radio, where line of sight, particularly obstructions, matters more than atmospheric propagation.</p>
             <p>Start by entering an address or coordinates for each of the two locations, then drag the markers into position for more details.</p>
+            <p>Of course, the results here are only an estimate based on terrain. Real-world factors such as buildings and other obstacles may affect communication.</p>
         </div>
 
         <form id="searchform" onSubmit="return false;" class="container pb-3">
@@ -63,10 +64,6 @@
                             <span class="d-none link-danger fw-bold" id="insufficienthorizon">
                                 <br />
                                 The distance is further than the horizon. Successful contact is unlikely.
-                            </span>
-                            <span class="d-none link-danger fw-bold" id="terrainblockage">
-                                <br />
-                                The intermediate terrain is higher than the transmitter and receiver. Successful contact is unlikely.
                             </span>
                         </p>
                         <p>

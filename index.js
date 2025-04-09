@@ -194,7 +194,6 @@ function hideLineOfSight () {
 function updateTheLine () {
     placeLineOfSight();
     updateReadouts();
-    showElevationProfile();
     updateAddressBar();
 }
 
@@ -212,31 +211,64 @@ function placeLineOfSight () {
 function updateReadouts () {
     const xlatlng = MAP.xmarker.getLatLng();
     const rlatlng = MAP.rmarker.getLatLng();
-
-    const distance_km = xlatlng.distanceTo(rlatlng) / 1000.0;
-    const distance_mi = xlatlng.distanceTo(rlatlng) / 1609.34;
-    const bearing_deg = xlatlng.bearingTo(rlatlng);
-    const bearing_txt = xlatlng.bearingWordTo(rlatlng);
+    const xlat = xlatlng.lat;
+    const xlng = xlatlng.lng;
+    const rlat = rlatlng.lat;
+    const rlng = rlatlng.lng;
 
     const $readouts = $('#readouts');
-    $readouts.find('span[data-readout="distance_km"]').text(distance_km.toFixed(1));
-    $readouts.find('span[data-readout="distance_mi"]').text(distance_mi.toFixed(1));
-    $readouts.find('span[data-readout="bearing_deg"]').text(bearing_deg);
-    $readouts.find('span[data-readout="bearing_txt"]').text(bearing_txt);
     $readouts.removeClass('d-none');
 
     // the elevation points are asynchronous
+    // fetch the list of the first point (transmitter) and last point (receiver)
+    // plus X points in between, to form the elevation profile
     // thank you, Open-Elevation!
+
+    // generate X points along the straight line; a list of [[lat,lng,distance], [lat,lng,distance], [lat,lng,distance]...]
+    // the lat,lng will be for elevation (Y axis) and distance along the line will form the X axis
+    const howmanypoints = 50;
+    const totalmeters = xlatlng.distanceTo(rlatlng);
+
+    const points = [];
+    const latstep = (rlat - xlat) / howmanypoints;
+    const lngstep = (rlng - xlng) / howmanypoints;
+    const lenstep = totalmeters / howmanypoints;  // meters
+
+    points.push([xlat, xlng, 0]);
+    for (let i = 1; i <= howmanypoints; i++) {
+        const lat = xlat + (i * latstep);
+        const lng = xlng + (i * lngstep);
+        const m = lenstep * i;
+        points.push([lat, lng, m]);
+    }
+
     $.ajax({
         url: 'https://api.open-elevation.com/api/v1/lookup',
         'data': {
-            locations: `${xlatlng.lat},${xlatlng.lng}|${rlatlng.lat},${rlatlng.lng}`,
+            locations: points.map(p => `${p[0]},${p[1]}`).join('|'),
         },
         success: function (response) {
+            // now to display results!
+            // response.results is a set of {latitude, longitude, elevation} objects
+
+            // the distance and bearing can be had from the LatLng themselves
+            // don't need the API for these, but this is where we're doing the readouts
+            const distance_km = xlatlng.distanceTo(rlatlng) / 1000.0;
+            const distance_mi = xlatlng.distanceTo(rlatlng) / 1609.34;
+            const bearing_deg = xlatlng.bearingTo(rlatlng);
+            const bearing_txt = xlatlng.bearingWordTo(rlatlng);
+
+            $readouts.find('span[data-readout="distance_km"]').text(distance_km.toFixed(1));
+            $readouts.find('span[data-readout="distance_mi"]').text(distance_mi.toFixed(1));
+            $readouts.find('span[data-readout="bearing_deg"]').text(bearing_deg);
+            $readouts.find('span[data-readout="bearing_txt"]').text(bearing_txt);
+
+            // the first and last point are the transmitter and the receiver
+            // get their elevation, calculate the horizon distance, and fill those in to the slots
             const transmit_elevation_m = response.results[0].elevation;
             const transmit_elevation_ft = Math.round(response.results[0].elevation / 0.3048);
-            const receive_elevation_m = response.results[1].elevation;
-            const receive_elevation_ft = Math.round(response.results[1].elevation / 0.3048);
+            const receive_elevation_m = response.results[response.results.length - 1].elevation;
+            const receive_elevation_ft = Math.round(response.results[response.results.length - 1].elevation / 0.3048);
 
             const pyth1 = Math.pow(transmit_elevation_m + 6378137, 2) - 40680631590769;
             const pyth2 = Math.pow(receive_elevation_m + 6378137, 2) - 40680631590769;
@@ -253,47 +285,9 @@ function updateReadouts () {
             const $insufficienthorizon = $('#insufficienthorizon');
             if (distance_km > horizon_km) $insufficienthorizon.removeClass('d-none');
             else $insufficienthorizon.addClass('d-none');
-        },
-    });
-}
 
-
-function showElevationProfile () {
-    const xlatlng = MAP.xmarker.getLatLng();
-    const rlatlng = MAP.rmarker.getLatLng();
-    const xlat = xlatlng.lat;
-    const xlng = xlatlng.lng;
-    const rlat = rlatlng.lat;
-    const rlng = rlatlng.lng;
-
-    const howmanypoints = 50;
-    const totalmeters = xlatlng.distanceTo(rlatlng);
-
-    // generate X points along the straight line; a list of [[lat,lng,distance], [lat,lng,distance], [lat,lng,distance]...]
-    // the lat,lng will be for elevation (Y axis) and distance along the line will form the X axis
-    const points = [];
-    const latstep = (rlat - xlat) / howmanypoints;
-    const lngstep = (rlng - xlng) / howmanypoints;
-    const lenstep = totalmeters / howmanypoints;  // meters
-
-    points.push([xlat, xlng, 0]);
-    for (let i = 1; i <= howmanypoints; i++) {
-        const lat = xlat + (i * latstep);
-        const lng = xlng + (i * lngstep);
-        const m = lenstep * i;
-        points.push([lat, lng, m]);
-    }
-
-    // hand off to the elevation API
-    // thank you, Open-Elevation!
-    $.ajax({
-        url: 'https://api.open-elevation.com/api/v1/lookup',
-        'data': {
-            locations: points.map(p => `${p[0]},${p[1]}`).join('|'),
-        },
-        success: function (response) {
-            // the results are a set of {latitude, longitude, elevation} objects
-            // remap this to Highcharts-compatible dicts with a "y" attribute for the chart and other attributes for tooltips
+// GDA
+            // remap the result points to Highcharts-compatible dicts with a "y" attribute for the chart and other attributes for tooltips
             const chartpoints = response.results.map((point, i) => {
                 return {
                     y: point.elevation,
@@ -345,15 +339,6 @@ function showElevationProfile () {
                     { data: chartpoints, },
                 ],
             });
-
-            // is the highest point between the transmitter and receiver, higher than the transmitter and receiver?
-            const $terrainblockage = $('#terrainblockage');
-            const elevations = response.results.map(point => point.elevation);
-            const highest = Math.max(...elevations) - 10;  // a little buffer so we don't report a 1-meter obstruction
-            const xelev = response.results[0].elevation;  // first point is the transmitter's location
-            const relev = response.results[response.results.length - 1].elevation;  // last point is the receiver's location
-            if (highest > xelev && highest > relev) $terrainblockage.removeClass('d-none');
-            else $terrainblockage.addClass('d-none');
         },
     });
 }
