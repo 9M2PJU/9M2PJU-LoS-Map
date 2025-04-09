@@ -345,6 +345,15 @@ function showElevationProfile () {
                     { data: chartpoints, },
                 ],
             });
+
+            // is the highest point between the transmitter and receiver, higher than the transmitter and receiver?
+            const $terrainblockage = $('#terrainblockage');
+            const elevations = response.results.map(point => point.elevation);
+            const highest = Math.max(...elevations) - 10;  // a little buffer so we don't report a 1-meter obstruction
+            const xelev = response.results[0].elevation;  // first point is the transmitter's location
+            const relev = response.results[response.results.length - 1].elevation;  // last point is the receiver's location
+            if (highest > xelev && highest > relev) $terrainblockage.removeClass('d-none');
+            else $terrainblockage.addClass('d-none');
         },
     });
 }

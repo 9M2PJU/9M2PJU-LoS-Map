@@ -60,9 +60,13 @@
                             Distance: <span data-readout="distance_mi"></span> miles, <span data-readout="distance_km"></span> kilometers
                             <br />
                             Horizon: <span data-readout="horizon_mi"></span> miles, <span data-readout="horizon_km"></span> kilometers
-                            <span class="d-none" id="insufficienthorizon">
+                            <span class="d-none link-danger fw-bold" id="insufficienthorizon">
                                 <br />
-                                The distance is further than the horizon, so successful contact is unlikely.
+                                The distance is further than the horizon. Successful contact is unlikely.
+                            </span>
+                            <span class="d-none link-danger fw-bold" id="terrainblockage">
+                                <br />
+                                The intermediate terrain is higher than the transmitter and receiver. Successful contact is unlikely.
                             </span>
                         </p>
                         <p>
