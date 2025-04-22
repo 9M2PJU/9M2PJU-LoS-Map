@@ -286,7 +286,6 @@ function updateReadouts () {
             if (distance_km > horizon_km) $insufficienthorizon.removeClass('d-none');
             else $insufficienthorizon.addClass('d-none');
 
-// GDA
             // remap the result points to Highcharts-compatible dicts with a "y" attribute for the chart and other attributes for tooltips
             const chartpoints = response.results.map((point, i) => {
                 return {

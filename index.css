@@ -3,6 +3,10 @@ html, body {
     margin: 0;
 }
 
+.text-small {
+    font-size: 0.8rem;
+}
+
 #map {
     height: 600px;
     width: 100%;
