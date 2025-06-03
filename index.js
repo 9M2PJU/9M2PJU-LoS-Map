@@ -81,6 +81,9 @@ $(document).ready(function () {
         color: 'darkblue',
     });
 
+// GDA
+	MAP.tooltip = L.tooltip();
+
     //
     // address search; position & add the markers
     //
@@ -292,6 +295,8 @@ function updateReadouts () {
             const chartpoints = response.results.map((point, i) => {
                 return {
                     y: point.elevation,
+                    lat: point.latitude,
+                    lng: point.longitude,
                     distance_km: (i * lenstep / 1000.0).toFixed(1),
                     distance_mi: (i * lenstep / 1609.43).toFixed(1),
                     elevation_ft: Math.round(point.elevation / 0.3048),
@@ -326,6 +331,9 @@ function updateReadouts () {
                 },
                 tooltip: {
                     formatter: function () {
+						// side effect, map tooltip; see also mouseOut handler
+						MAP.tooltip.setLatLng([this.point.lat, this.point.lng]).setContent(`<strong>Distance:</strong> ${this.point.options.distance_mi} miles, ${this.point.options.distance_km} kilometers<br/><strong>Elevation:</strong> ${this.point.options.elevation_ft} feet, ${this.point.options.elevation_m} meters`).addTo(MAP);
+
                         return `<strong>Distance:</strong> ${this.point.options.distance_mi} miles, ${this.point.options.distance_km} kilometers<br/><strong>Elevation:</strong> ${this.point.options.elevation_ft} feet, ${this.point.options.elevation_m} meters`;
                     },
                 },
@@ -337,7 +345,14 @@ function updateReadouts () {
                     },
                 },
                 series: [
-                    { data: chartpoints, },
+                    {
+                    	data: chartpoints,
+                    	events: {
+                    		mouseOut: function (event) {  // clear map tooltip, see also tooltip formatter
+								MAP.tooltip.setLatLng([0, 0]).removeFrom(MAP);
+                    		},
+                    	},
+                    },
                 ],
             });
         },
