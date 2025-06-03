@@ -53,9 +53,11 @@ $(document).ready(function () {
     }).addTo(MAP);
 
     MAP.xmarker = L.marker([0, 0], {
+        title: "Transmitting location",
         draggable: true,
     });
     MAP.rmarker = L.marker([0, 0], {
+        title: "Receiving location",
         draggable: true,
     });
     MAP.xmarker.on('drag', function () {

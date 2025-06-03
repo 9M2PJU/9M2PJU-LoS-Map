@@ -3,12 +3,12 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-	
+    
     <title>UHF/VHF Line-of-Sight Calculator</title>
    <link rel="shortcut icon" type="image/x-icon" href="favicon.png" />
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>	
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>    
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
@@ -18,16 +18,31 @@
     <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
 
     <link rel="stylesheet" href="index.css" />
-    <script src="index.js"></script>	
+    <script src="index.js"></script>    
 </head>
 <body class="d-flex flex-column h-100">
     <main class="flex-shrink-0 container-fluid">
-        <div class="container pt-3">
+        <div class="container mt-3 mb-3">
             <h1>UHF/VHF Line-of-Sight Calculator</h1>
 
             <p>This tool can help find locations allowing for line-of-sight communications such as UHF (70 centimeter) and VHF (2 meter) amateur radio, where line of sight, particularly obstructions, matters more than atmospheric propagation.</p>
             <p>Start by entering an address or coordinates for each of the two locations, then drag the markers into position for more details.</p>
             <p>Of course, the results here are only an estimate based on terrain. Real-world factors such as buildings and other obstacles may affect communication.</p>
+
+            <div>
+                <button type="button" class="btn btn-link btn-sm p-0" data-bs-toggle="collapse" data-bs-target="#instructions-repeaterbook" aria-expanded="false" aria-controls="instructions-repeaterbook">Instructions to get coordinates from RepeaterBook</button>
+                <div class="collapse" id="instructions-repeaterbook">
+                    <div class="card card-body p-1">
+                        <ul class="mb-0">
+                            <li>Open the repeater details page at RepeaterBook, e.g., <a href="https://www.repeaterbook.com/repeaters/details.php?state_id=41&ID=365" target="_blank">https://www.repeaterbook.com/repeaters/details.php?state_id=41&ID=365</a></li>
+                            <li>Open your browser's debugger by pressing F12, then go to the Console section.</li>
+                            <li>Paste in this command: <code>mymap.getCenter().lat + ',' + mymap.getCenter().lng</code></li>
+                            <li>Your browser may give you a warning about pasting code into the Console,and require that you type <code>allow pasting</code> to continue.</li>
+                            <li>You should get back a latitude and longitude string e.g., <code>'44.9491733350656,-122.9332083463669'</code>. Paste that into the transmitting or receiving box below, <strong>but be sure to leave off the quote marks</strong>.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <form id="searchform" onSubmit="return false;" class="container pb-3">
