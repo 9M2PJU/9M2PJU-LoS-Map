@@ -50,17 +50,29 @@
                 <div class="col-12 col-md-6 text-center">
                     <p class="fw-bold mb-0">Transmitting Location</p>
 
-                    <div class="input-group">
-                        <input type="text" name="xaddr" autocomplete="off" placeholder="address or lat,lng" class="form-control" />
+                    <div class="input-group mb-1">
+                        <span class="input-group-text pe-3">Lat,lng or address</span>
+                        <input type="text" name="xaddr" autocomplete="off" placeholder="address or lat,lng" class="form-control text-end" />
                         <button type="button" class="btn btn-primary" name="xsearchgo">Find</button>
+                    </div>
+                    <div class="input-group">
+                        <span class="input-group-text">Mast/tower height</span>
+                        <input type="number" value="0" min="0" max="500" step="1" name="xheight" autocomplete="off" class="form-control text-end" />
+                        <span class="input-group-text ps-3">feet</span>
                     </div>
                 </div>
                 <div class="col-12 col-md-6 text-center">
                     <p class="fw-bold mb-0">Receiving Location</p>
 
-                    <div class="input-group">
-                        <input type="text" name="raddr" autocomplete="off" placeholder="address or lat,lng" class="form-control" />
+                    <div class="input-group mb-1">
+                        <span class="input-group-text pe-3">Lat,lng or address</span>
+                        <input type="text" name="raddr" autocomplete="off" placeholder="address or lat,lng" class="form-control text-end" />
                         <button type="button" class="btn btn-primary" name="rsearchgo">Find</button>
+                    </div>
+                    <div class="input-group">
+                        <span class="input-group-text">Mast/tower height</span>
+                        <input type="number" value="0" min="0" max="500" step="1" name="rheight" autocomplete="off" class="form-control text-end" />
+                        <span class="input-group-text ps-3">feet</span>
                     </div>
                 </div>
             </div>

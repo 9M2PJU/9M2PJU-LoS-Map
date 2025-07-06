@@ -8,6 +8,7 @@ const MAP_MAX_ZOOM = 18;
 
 const LOOKS_LIKE_COORDS = /^(\-?\d+\.\d+)\s*,(\s*\-?\d+\.\d+)$/;
 
+const FEET2METERS = 0.3048;
 
 // add to Leaflet LatLng the calculation of a compass heading
 L.LatLng.prototype.bearingTo = function(LatLng) {
@@ -41,6 +42,8 @@ $(document).ready(function () {
     const $raddr_input = $form.find('input[name="raddr"]');
     const $xaddr_go = $form.find('button[name="xsearchgo"]');
     const $raddr_go = $form.find('button[name="rsearchgo"]');
+    const $xheight = $('input[name="xheight"]');
+    const $rheight = $('input[name="rheight"]');
 
     //
     // basic setup of the map and the drag markers
@@ -81,7 +84,6 @@ $(document).ready(function () {
         color: 'darkblue',
     });
 
-// GDA
 	MAP.tooltip = L.tooltip();
 
     //
@@ -112,6 +114,18 @@ $(document).ready(function () {
     });
     $raddr_input.keyup(function (event) {
         if (event.key == 'Enter') $raddr_go.click();
+    });
+    $xheight.keyup(function (event) {
+        if (event.key == 'Enter') $xaddr_go.click();
+    });
+    $rheight.keyup(function (event) {
+        if (event.key == 'Enter') $raddr_go.click();
+    });
+    $xheight.change(function (event) {
+        $xaddr_input.change();
+    });
+    $rheight.change(function (event) {
+        $raddr_input.change();
     });
 
     $xaddr_go.click(function () {
@@ -154,8 +168,14 @@ $(document).ready(function () {
 
     if (document.location.hash) {
         const coords = document.location.hash.replace(/^#/, '').split(',').map(i => parseFloat(i));
-        if (coords.length == 4 && !isNaN(coords[0]) && !isNaN(coords[1]) && !isNaN(coords[3]) && !isNaN(coords[3])) {    
+        if (coords.length == 4 && !isNaN(coords[0]) && !isNaN(coords[1]) && !isNaN(coords[2]) && !isNaN(coords[3])) {
             $xaddr_input.val(`${coords[0]},${coords[1]}`).change();
+            $raddr_input.val(`${coords[2]},${coords[3]}`).change();
+        }
+        else if (coords.length == 6 && !isNaN(coords[0]) && !isNaN(coords[1]) && !isNaN(coords[2]) && !isNaN(coords[3]) && !isNaN(coords[4]) && !isNaN(coords[5])) {
+			$xheight.val(coords[4]);
+			$rheight.val(coords[5]);
+        	$xaddr_input.val(`${coords[0]},${coords[1]}`).change();
             $raddr_input.val(`${coords[2]},${coords[3]}`).change();
         }
     }
@@ -220,6 +240,8 @@ function updateReadouts () {
     const xlng = xlatlng.lng;
     const rlat = rlatlng.lat;
     const rlng = rlatlng.lng;
+    const xheight = parseInt($('input[name="xheight"]').val());
+    const rheight = parseInt($('input[name="rheight"]').val());
 
     const $readouts = $('#readouts');
     $readouts.removeClass('d-none');
@@ -256,6 +278,11 @@ function updateReadouts () {
             // now to display results!
             // response.results is a set of {latitude, longitude, elevation} objects
 
+			// add xheight and rheight to the first and last points
+			// elevation is meters, inputs are feet
+			response.results[0].elevation += (xheight * FEET2METERS);
+			response.results[response.results.length - 1].elevation += (rheight * FEET2METERS);
+
             // the distance and bearing can be had from the LatLng themselves
             // don't need the API for these, but this is where we're doing the readouts
             const distance_km = xlatlng.distanceTo(rlatlng) / 1000.0;
@@ -280,9 +307,9 @@ function updateReadouts () {
             const horizon_km = ((Math.sqrt(pyth1) + Math.sqrt(pyth2)) / 1000.0).toFixed(1);
             const horizon_mi = ((Math.sqrt(pyth1) + Math.sqrt(pyth2)) / 1609.34).toFixed(1);
 
-            $readouts.find('span[data-readout="transmit_elevation_m"]').text(transmit_elevation_m);
+            $readouts.find('span[data-readout="transmit_elevation_m"]').text(Math.round(transmit_elevation_m));
             $readouts.find('span[data-readout="transmit_elevation_ft"]').text(transmit_elevation_ft);
-            $readouts.find('span[data-readout="receive_elevation_m"]').text(receive_elevation_m);
+            $readouts.find('span[data-readout="receive_elevation_m"]').text(Math.round(receive_elevation_m));
             $readouts.find('span[data-readout="receive_elevation_ft"]').text(receive_elevation_ft);
             $readouts.find('span[data-readout="horizon_mi"]').text(horizon_mi);
             $readouts.find('span[data-readout="horizon_km"]').text(horizon_km);
@@ -367,6 +394,9 @@ function updateAddressBar () {
     const xlng = xlatlng.lng;
     const rlat = rlatlng.lat;
     const rlng = rlatlng.lng;
+    const xheight = $('input[name="xheight"]').val();
+    const rheight = $('input[name="rheight"]').val();
 
-    document.location.hash = `${xlat},${xlng},${rlat},${rlng}`;
+    document.location.hash = `${xlat},${xlng},${rlat},${rlng},${xheight},${rheight}`;
 }
+
