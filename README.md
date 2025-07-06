@@ -4,6 +4,8 @@ This tool can help find locations allowing for line-of-sight communications such
 
 This is an elevation map with other tools such as address search (geocoder) and a line drawing tool which will show the elevation changes along the line.
 
+The website for this application is https://radiocalculator.xyz/ No signup, no ads, no BS - just loine of sight calculation.
+
 
 ## License and Thanks
 
