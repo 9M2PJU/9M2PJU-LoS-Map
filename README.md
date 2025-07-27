@@ -41,9 +41,6 @@ This project is released under the **MIT License**, so you're free to copy, modi
 - 🏔️ [Open-Elevation](https://open-elevation.com/) – for elevation API  
 - 🧭 [OpenStreetMap Nominatim](https://nominatim.org/) – for geocoding/search  
 - 📈 [Highcharts](https://www.highcharts.com/) – for the elevation profile chart  
-- 💻 GitHub – for hosting and collaboration  
-- 👨‍💻 My employer – for letting me use my personal time to build and enhance this  
-- 🇺🇦 Leaflet contributors: Слава Україні! Героям слава!
 
 ---
 
