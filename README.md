@@ -11,6 +11,7 @@ This tool features:
 - Optimized for mobile and desktop browsers
 
 🌐 Live version: [https://los.hamradio.my](https://los.hamradio.my)  
+
 No signup. No ads. No nonsense — just effective line-of-sight calculation.
 
 ---
