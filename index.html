@@ -1,104 +1,124 @@
-<!-- Leaflet -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>    
+<!DOCTYPE html>
+<html lang="en">
 
-    <!-- Bootstrap Dark Theme -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BTVnkw4M5LZSc9mQa4l5dR7P2dAwxD6QHc/BFVpEuIxK1QzTTlbFELxZGrNFaUm6" crossorigin="anonymous">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-WL4ZIR9HbftqxvmgXyQ4akW1Tn0nUzjlBQ0zLrD4P4HTpU6gljQ6A7gKBR1RnKkU" crossorigin="anonymous"></script>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>9M2PJU Line-of-Sight Map</title>
 
-    <!-- Highcharts -->
-    <script src="https://code.highcharts.com/highcharts.js"></script>
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="Estimate and visualize line-of-sight communication paths for UHF (70 cm) and VHF (2 m) amateur radio using real terrain data. Designed for ham radio operators in Malaysia and beyond.">
+  <meta name="keywords" content="line-of-sight calculator, vhf uhf map, ham radio tool, amateur radio Malaysia, repeater planning, elevation profile, terrain analysis, 9M2PJU, radio communication">
+  <meta name="author" content="9M2PJU">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="9M2PJU Line-of-Sight Map">
+  <meta property="og:description" content="A tool to estimate and visualize VHF/UHF radio line-of-sight paths using terrain data.">
+  <meta property="og:image" content="https://los.hamradio.my/preview.png">
+  <meta property="og:url" content="https://los.hamradio.my">
+  <meta name="twitter:card" content="summary_large_image">
 
-    <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+  <link rel="shortcut icon" href="favicon.png" type="image/x-icon" />
 
-    <!-- Custom Styles -->
-    <link rel="stylesheet" href="index.css" />
-    <script src="index.js"></script>    
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>    
+
+  <!-- Bootstrap Dark Theme -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BTVnkw4M5LZSc9mQa4l5dR7P2dAwxD6QHc/BFVpEuIxK1QzTTlbFELxZGrNFaUm6" crossorigin="anonymous">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-WL4ZIR9HbftqxvmgXyQ4akW1Tn0nUzjlBQ0zLrD4P4HTpU6gljQ6A7gKBR1RnKkU" crossorigin="anonymous"></script>
+
+  <!-- Highcharts -->
+  <script src="https://code.highcharts.com/highcharts.js"></script>
+
+  <!-- jQuery -->
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="index.css" />
+  <script src="index.js"></script>    
 
     <!-- Custom Dark Mode Enhancements -->
-    <style>
-        body {
-            background-color: #121212;
-            color: #e0e0e0;
-        }
+  <style>
+      body {
+          background-color: #121212;
+          color: #e0e0e0;
+      }
 
-        h1, h2, h3, h4, h5 {
-            color: #ffffff;
-        }
+      h1, h2, h3, h4, h5 {
+          color: #ffffff;
+      }
 
-        .card {
-            background-color: #1e1e1e;
-            border-color: #333;
-        }
+      .card {
+          background-color: #1e1e1e;
+          border-color: #333;
+      }
 
-        .input-group-text {
-            background-color: #2a2a2a;
-            color: #ccc;
-            border-color: #444;
-        }
+      .input-group-text {
+          background-color: #2a2a2a;
+          color: #ccc;
+          border-color: #444;
+      }
 
-        .form-control {
-            background-color: #1c1c1c;
-            color: #e0e0e0;
-            border-color: #444;
-        }
+      .form-control {
+          background-color: #1c1c1c;
+          color: #e0e0e0;
+          border-color: #444;
+      }
 
-        .form-control::placeholder {
-            color: #888;
-        }
+      .form-control::placeholder {
+          color: #888;
+      }
 
-        .btn-primary {
-            background-color: #0066cc;
-            border-color: #005bb5;
-        }
+      .btn-primary {
+          background-color: #0066cc;
+          border-color: #005bb5;
+      }
 
-        .btn-primary:hover {
-            background-color: #005bb5;
-            border-color: #004b9f;
-        }
+      .btn-primary:hover {
+          background-color: #005bb5;
+          border-color: #004b9f;
+      }
 
-        .border {
-            border-color: #444 !important;
-        }
+      .border {
+          border-color: #444 !important;
+      }
 
-        #map {
-            height: 500px;
-            margin-bottom: 20px;
-        }
+      #map {
+          height: 500px;
+          margin-bottom: 20px;
+      }
 
-        footer {
-            background-color: #1a1a1a;
-            color: #bbb;
-        }
+      footer {
+          background-color: #1a1a1a;
+          color: #bbb;
+      }
 
-        a {
-            color: #4eaaff;
-        }
+      a {
+          color: #4eaaff;
+      }
 
-        a:hover {
-            color: #82cfff;
-        }
+      a:hover {
+          color: #82cfff;
+      }
 
-        .list-unstyled a {
-            text-decoration: none;
-        }
+      .list-unstyled a {
+          text-decoration: none;
+      }
 
-        .list-unstyled a:hover {
-            text-decoration: underline;
-        }
+      .list-unstyled a:hover {
+          text-decoration: underline;
+      }
 
-        #elevationprofile {
-            height: 300px;
-        }
+      #elevationprofile {
+          height: 300px;
+      }
 
-        .btn-link {
-            color: #66b2ff;
-        }
+      .btn-link {
+          color: #66b2ff;
+      }
 
-        .btn-link:hover {
-            color: #99ccff;
-        }
+      .btn-link:hover {
+          color: #99ccff;
+      }
     </style>
 </head>
 <body class="d-flex flex-column h-100">
