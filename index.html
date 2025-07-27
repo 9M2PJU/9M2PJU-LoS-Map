@@ -19,207 +19,148 @@
 
   <link rel="shortcut icon" href="favicon.png" type="image/x-icon" />
 
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>    
+  <!-- Leaflet CSS/JS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 
-  <!-- Bootstrap Dark Theme -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BTVnkw4M5LZSc9mQa4l5dR7P2dAwxD6QHc/BFVpEuIxK1QzTTlbFELxZGrNFaUm6" crossorigin="anonymous">
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-WL4ZIR9HbftqxvmgXyQ4akW1Tn0nUzjlBQ0zLrD4P4HTpU6gljQ6A7gKBR1RnKkU" crossorigin="anonymous"></script>
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
   <!-- Highcharts -->
   <script src="https://code.highcharts.com/highcharts.js"></script>
 
   <!-- jQuery -->
-  <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js" crossorigin="anonymous"></script>
 
-  <!-- Custom Styles -->
-  <link rel="stylesheet" href="index.css" />
-  <script src="index.js"></script>    
+  <!-- Custom CSS/JS -->
+  <link rel="stylesheet" href="index.css">
+  <script src="index.js"></script>
 
-    <!-- Custom Dark Mode Enhancements -->
   <style>
-      body {
-          background-color: #121212;
-          color: #e0e0e0;
-      }
-
-      h1, h2, h3, h4, h5 {
-          color: #ffffff;
-      }
-
-      .card {
-          background-color: #1e1e1e;
-          border-color: #333;
-      }
-
-      .input-group-text {
-          background-color: #2a2a2a;
-          color: #ccc;
-          border-color: #444;
-      }
-
-      .form-control {
-          background-color: #1c1c1c;
-          color: #e0e0e0;
-          border-color: #444;
-      }
-
-      .form-control::placeholder {
-          color: #888;
-      }
-
-      .btn-primary {
-          background-color: #0066cc;
-          border-color: #005bb5;
-      }
-
-      .btn-primary:hover {
-          background-color: #005bb5;
-          border-color: #004b9f;
-      }
-
-      .border {
-          border-color: #444 !important;
-      }
-
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f9f9f9;
+    }
+    #map {
+      height: 60vh;
+      margin-top: 1rem;
+    }
+    .card {
+      border-radius: 1rem;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    }
+    .input-group-text {
+      background-color: #f0f0f0;
+    }
+    .fw-bold {
+      font-size: 1.1rem;
+    }
+    @media (max-width: 767px) {
       #map {
-          height: 500px;
-          margin-bottom: 20px;
+        height: 50vh;
       }
-
-      footer {
-          background-color: #1a1a1a;
-          color: #bbb;
-      }
-
-      a {
-          color: #4eaaff;
-      }
-
-      a:hover {
-          color: #82cfff;
-      }
-
-      .list-unstyled a {
-          text-decoration: none;
-      }
-
-      .list-unstyled a:hover {
-          text-decoration: underline;
-      }
-
-      #elevationprofile {
-          height: 300px;
-      }
-
-      .btn-link {
-          color: #66b2ff;
-      }
-
-      .btn-link:hover {
-          color: #99ccff;
-      }
-    </style>
+    }
+  </style>
 </head>
-<body class="d-flex flex-column h-100">
-  <main class="flex-shrink-0 container-fluid">
-    <div class="container mt-4 mb-4">
-      <h1 class="text-center">9M2PJU Line-of-Sight Map</h1>
 
-      <p>
-        This tool helps identify potential line-of-sight paths for UHF (70 cm) and VHF (2 m) amateur radio communications—bands where terrain and obstructions often affect communication more than atmospheric conditions.
-      </p>
-      <p>
-        Start by entering an address or coordinates for both locations. You can fine-tune the positions by dragging the markers on the map. The tool uses terrain data to estimate the path.
-      </p>
-      <p class="mb-4">
-        Note: Results are only estimates. Real-world obstructions such as buildings and trees may impact communication.
-      </p>
+<body class="d-flex flex-column min-vh-100">
+  <main class="flex-grow-1 container py-4">
+    <div class="text-center mb-4">
+      <h1 class="fw-bold text-primary">9M2PJU Line-of-Sight Map</h1>
+      <p>This tool helps identify potential line-of-sight paths for UHF (70 cm) and VHF (2 m) amateur radio communications—bands where terrain and obstructions often have a greater impact than atmospheric conditions.</p>
+      <p>Enter an address or coordinates for both locations. Drag the map markers to refine your positions and see terrain profiles.</p>
+      <p class="text-muted small">Note: Results are terrain-based estimates. Real-world obstacles like buildings or trees may affect accuracy.</p>
+    </div>
 
-      <div>
-        <button class="btn btn-link text-white p-0" data-bs-toggle="collapse" data-bs-target="#instructions-repeaterbook" aria-expanded="false" aria-controls="instructions-repeaterbook">
-          📍 How to Get Coordinates from RepeaterBook
-        </button>
-        <div class="collapse" id="instructions-repeaterbook">
-          <div class="card card-body p-3 mt-2">
-            <ul class="mb-0">
-              <li>Open a repeater detail on RepeaterBook (e.g., <a href="https://www.repeaterbook.com/repeaters/details.php?state_id=41&ID=365" target="_blank">example link</a>)</li>
-              <li>Press <kbd>F12</kbd> to open the browser console</li>
-              <li>Type: <code>mymap.getCenter().lat + ',' + mymap.getCenter().lng</code></li>
-              <li>Copy the returned <code>lat,lng</code> into the fields below (remove quote marks)</li>
-            </ul>
+    <div class="accordion mb-3" id="accordionHelp">
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="headingOne">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#instructions" aria-expanded="false">
+            How to get coordinates from RepeaterBook
+          </button>
+        </h2>
+        <div id="instructions" class="accordion-collapse collapse" data-bs-parent="#accordionHelp">
+          <div class="accordion-body">
+            <ol>
+              <li>Go to a repeater page on RepeaterBook (e.g., <a href="https://www.repeaterbook.com/repeaters/details.php?state_id=41&ID=365" target="_blank">example</a>).</li>
+              <li>Open Developer Console with <code>F12</code>, switch to the Console tab.</li>
+              <li>Paste this code: <code>mymap.getCenter().lat + ',' + mymap.getCenter().lng</code></li>
+              <li>If prompted, type <code>allow pasting</code> to proceed.</li>
+              <li>Copy the output (e.g., <code>44.9491733350656,-122.9332083463669</code>) and paste it into the form below (without quote marks).</li>
+            </ol>
           </div>
         </div>
       </div>
     </div>
 
-    <form id="searchform" onsubmit="return false;" class="container pb-4">
-      <div class="row g-4">
-        <div class="col-12 col-md-6">
-          <p class="fw-bold mb-2">📡 Transmitting Location</p>
-          <div class="input-group mb-2">
-            <span class="input-group-text">Lat,lng or address</span>
-            <input type="text" name="xaddr" placeholder="address or lat,lng" class="form-control text-end" />
-            <button type="button" class="btn btn-primary" name="xsearchgo">Find</button>
-          </div>
-          <div class="input-group">
-            <span class="input-group-text">Mast height</span>
-            <input type="number" name="xheight" value="0" min="0" max="500" class="form-control text-end" />
-            <span class="input-group-text">feet</span>
+    <form id="searchform" onsubmit="return false;">
+      <div class="row g-3">
+        <div class="col-md-6">
+          <div class="card p-3">
+            <h5 class="fw-bold text-center">Transmitting Location</h5>
+            <div class="input-group mb-2">
+              <span class="input-group-text">Lat,lng or address</span>
+              <input type="text" name="xaddr" class="form-control text-end" placeholder="e.g., address or 1.2345,103.5678">
+              <button type="button" class="btn btn-outline-primary" name="xsearchgo">Find</button>
+            </div>
+            <div class="input-group">
+              <span class="input-group-text">Mast height</span>
+              <input type="number" name="xheight" value="0" min="0" max="500" step="1" class="form-control text-end">
+              <span class="input-group-text">ft</span>
+            </div>
           </div>
         </div>
 
-        <div class="col-12 col-md-6">
-          <p class="fw-bold mb-2">📶 Receiving Location</p>
-          <div class="input-group mb-2">
-            <span class="input-group-text">Lat,lng or address</span>
-            <input type="text" name="raddr" placeholder="address or lat,lng" class="form-control text-end" />
-            <button type="button" class="btn btn-primary" name="rsearchgo">Find</button>
-          </div>
-          <div class="input-group">
-            <span class="input-group-text">Mast height</span>
-            <input type="number" name="rheight" value="0" min="0" max="500" class="form-control text-end" />
-            <span class="input-group-text">feet</span>
+        <div class="col-md-6">
+          <div class="card p-3">
+            <h5 class="fw-bold text-center">Receiving Location</h5>
+            <div class="input-group mb-2">
+              <span class="input-group-text">Lat,lng or address</span>
+              <input type="text" name="raddr" class="form-control text-end" placeholder="e.g., address or 1.2345,103.5678">
+              <button type="button" class="btn btn-outline-primary" name="rsearchgo">Find</button>
+            </div>
+            <div class="input-group">
+              <span class="input-group-text">Mast height</span>
+              <input type="number" name="rheight" value="0" min="0" max="500" step="1" class="form-control text-end">
+              <span class="input-group-text">ft</span>
+            </div>
           </div>
         </div>
       </div>
     </form>
 
-    <!-- Readouts -->
-    <div id="readouts" class="container d-none pb-4">
-      <div class="row g-4">
+    <div class="container mt-4 d-none" id="readouts">
+      <div class="row g-3">
         <div class="col-md-6">
-          <div class="border rounded p-3 h-100">
-            <h5>📏 Distance & Bearing</h5>
+          <div class="card p-3">
+            <h5 class="fw-bold">Distance and Bearing</h5>
             <p>
-              Distance: <span data-readout="distance_mi"></span> miles / <span data-readout="distance_km"></span> km<br />
-              Horizon: <span data-readout="horizon_mi"></span> miles / <span data-readout="horizon_km"></span> km
-              <br />
-              <span id="insufficienthorizon" class="text-danger d-none">
-                ❗ Beyond horizon limit — unlikely to succeed
+              Distance: <span data-readout="distance_mi"></span> mi, <span data-readout="distance_km"></span> km<br>
+              Horizon: <span data-readout="horizon_mi"></span> mi, <span data-readout="horizon_km"></span> km
+              <span class="text-danger d-none fw-bold" id="insufficienthorizon">
+                <br>Distance exceeds horizon. Contact unlikely.
               </span>
             </p>
             <p>
-              Elevation Tx: <span data-readout="transmit_elevation_ft"></span> ft / <span data-readout="transmit_elevation_m"></span> m<br />
-              Elevation Rx: <span data-readout="receive_elevation_ft"></span> ft / <span data-readout="receive_elevation_m"></span> m
+              Elevation (Tx): <span data-readout="transmit_elevation_ft"></span> ft, <span data-readout="transmit_elevation_m"></span> m<br>
+              Elevation (Rx): <span data-readout="receive_elevation_ft"></span> ft, <span data-readout="receive_elevation_m"></span> m
             </p>
-            <p>
-              Bearing: <span data-readout="bearing_deg"></span>° / <span data-readout="bearing_txt"></span>
-            </p>
+            <p>Bearing: <span data-readout="bearing_deg"></span>&deg;, <span data-readout="bearing_txt"></span></p>
           </div>
         </div>
+
         <div class="col-md-6">
-          <div class="border rounded p-3 h-100">
-            <h5>🌄 Elevation Profile</h5>
+          <div class="card p-3">
+            <h5 class="fw-bold">Elevation Profile</h5>
             <div id="elevationprofile"></div>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="container">
-      <div id="map" class="rounded shadow-sm"></div>
-    </div>
+    <div id="map" class="rounded shadow-sm"></div>
   </main>
 </body>
+
 </html>
