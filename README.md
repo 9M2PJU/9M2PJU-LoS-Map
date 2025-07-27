@@ -1,33 +1,70 @@
-# UHF/VHF Line-of-Sight Calculator
+# 9M2PJU Line-of-Sight Map
 
-This tool can help find locations allowing for line-of-sight communications such as UHF (70 cm) and VHF (2 meter) amateur radio, where line of sight matters more than atmospheric propagation.
+This is a UHF/VHF Line-of-Sight Calculator designed for amateur radio operators, particularly those working on the 70 cm and 2 meter bands. It helps identify potential line-of-sight paths between two locations, where terrain and elevation play a more critical role than atmospheric conditions.
 
-This is an elevation map with other tools such as address search (geocoder) and a line drawing tool which will show the elevation changes along the line.
+This tool features:
+- Elevation profile mapping along a path
+- Geocoding (address/coordinates search)
+- Interactive line drawing
+- Clean, ad-free interface
+- Fully responsive dark mode design
+- Optimized for mobile and desktop browsers
 
-The website for this application is https://radiocalculator.xyz/ No signup, no ads, no BS - just loine of sight calculation.
+🌐 Live version: [https://los.hamradio.my](https://los.hamradio.my)  
+No signup. No ads. No nonsense — just effective line-of-sight calculation.
 
+---
 
-## License and Thanks
+## 🔧 Modifications by 9M2PJU
 
-This is released under MIT License, so you can take a copy and modify for your own use and others. Enjoy.
+This fork includes the following enhancements:
 
-Thanks to:
-- Github for hosting
-- Leaflet for a fine map framework; Слава Україні! Героям слава!
-- Esri for the topo map
-- Open-Elevation for the elevation API
-- OpenStreetMap for the Nominatim geocoder
-- Highcharts for the charting
-- And my employer, who let me use my free time for this
+- ✅ **Dark Mode UI** using Bootstrap 5.3 with a mobile-first layout  
+- ✅ **SEO meta tags** for better discoverability  
+- ✅ **Improved Highcharts theme** for dark elevation profiles  
+- ✅ **Responsive layout** for phones, tablets, and desktops  
+- ✅ **Clean UI structure** using cards, form controls, and spacing improvements  
+- ✅ **Malay & international ham operator friendly** usage  
+- ✅ **Hosted on a Malaysian ham radio domain** for regional convenience  
 
+---
 
-## Development
+## 📄 License and Acknowledgements
 
-There is no build system, no Webpack, etc.so any web server that can serve static files will do.
+This project is released under the **MIT License**, so you're free to copy, modify, and redistribute it.
 
-```
+### Special Thanks:
+
+- 👨‍💻 **Original Developer:** [Greg Allensworth](https://github.com/gregallensworth/ham-uhfvhf-map) — for creating the base project this was built upon. Without his solid groundwork, this tool wouldn’t exist.  
+- 🗺️ [Leaflet](https://leafletjs.com/) – for the map interface  
+- 🌍 [Esri](https://www.esri.com/) – for the topographic basemap  
+- 🏔️ [Open-Elevation](https://open-elevation.com/) – for elevation API  
+- 🧭 [OpenStreetMap Nominatim](https://nominatim.org/) – for geocoding/search  
+- 📈 [Highcharts](https://www.highcharts.com/) – for the elevation profile chart  
+- 💻 GitHub – for hosting and collaboration  
+- 👨‍💻 My employer – for letting me use my personal time to build and enhance this  
+- 🇺🇦 Leaflet contributors: Слава Україні! Героям слава!
+
+---
+
+## ⚙️ Development
+
+There’s no build system or dependency manager required. Any basic web server will do.
+
+To run locally:
+
+```bash
 python3 -m http.server
+````
+
+Then open in your browser:
+
+```
+http://localhost:8000
 ```
 
-This will serve the site at http://localhost:8000
+---
 
+Enjoy exploring UHF/VHF terrain like never before!
+
+```
