@@ -67,4 +67,3 @@ http://localhost:8000
 
 Enjoy exploring UHF/VHF terrain like never before!
 
-```
