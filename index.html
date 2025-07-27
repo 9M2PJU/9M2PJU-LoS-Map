@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     
-    <title>UHF/VHF Line-of-Sight Calculator</title>
+    <title>9M2PJU Line-of-Sight Map</title>
    <link rel="shortcut icon" type="image/x-icon" href="favicon.png" />
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
@@ -23,11 +23,12 @@
 <body class="d-flex flex-column h-100">
     <main class="flex-shrink-0 container-fluid">
         <div class="container mt-3 mb-3">
-            <h1>UHF/VHF Line-of-Sight Calculator</h1>
+            <h1>9M2PJU Line-of-Sight Map</h1>
 
-            <p>This tool can help find locations allowing for line-of-sight communications such as UHF (70 centimeter) and VHF (2 meter) amateur radio, where line of sight, particularly obstructions, matters more than atmospheric propagation.</p>
-            <p>Start by entering an address or coordinates for each of the two locations, then drag the markers into position for more details.</p>
-            <p>Of course, the results here are only an estimate based on terrain. Real-world factors such as buildings and other obstacles may affect communication.</p>
+            <p>This tool helps identify potential line-of-sight paths for UHF (70 cm) and VHF (2 m) amateur radio communications—bands where terrain and obstructions often have a greater impact than atmospheric conditions.</p>
+            <p>To begin, enter an address or coordinates for both locations. You can then fine-tune the positions by dragging the map markers to see detailed information about the path.</p>
+            <p>Keep in mind, the results are based on terrain data and provide only an estimate. Real-world variables—like buildings, trees, or other obstructions—may still impact signal quality and communication effectiveness.</p>
+
 
             <div>
                 <button type="button" class="btn btn-link btn-sm p-0" data-bs-toggle="collapse" data-bs-target="#instructions-repeaterbook" aria-expanded="false" aria-controls="instructions-repeaterbook">Instructions to get coordinates from RepeaterBook</button>
@@ -115,36 +116,5 @@
 
         <div id="map"></div>
     </main>
-
-    <footer class="footer mt-auto py-3 px-3">
-        <div class="row">
-            <div class="col-12 col-lg-6 text-start text-small">
-                Thanks to:
-                <ul class="list-unstyled mb-0 ps-0">
-                    <li><a target="_blank" href="https://github.com/gregallensworth/ham-uhfvhf-map">Github</a> for hosting</li>
-                    <li><a href="https://leafletjs.com/reference.html">Leaflet</a> for a fine map framework; Слава Україні! Героям слава!</li>
-                    <li><a target="_blank" href="https://www.arcgis.com/home/item.html?id=30e5fe3149c34df1ba922e6f5bbf808f">Esri</a> for the topo map</li>
-                    <li><a target="_blank" href="https://github.com/Jorl17/open-elevation/blob/master/docs/api.md">Open-Elevation</a> for the elevation API</li>
-                    <li><a target="_blank" href="https://www.openstreetmap.org/">OpenStreetMap</a> for the Nominatim geocoder</li>
-                    <li><a target="_blank" href="https://www.highcharts.com/">Highcharts</a> for the charting</li>
-                    <li>And <a target="_blank" href="https://greeninfo.org/">GreenInfo Network, my employer</a>, who let me use my free time for this</li>
-                </ul>
-            </div>
-            <div class="col-12 col-lg-6 text-end">
-                2024 Gregor KK7YIZ
-                <br/>
-                <a href="https://github.com/gregallensworth/ham-uhfvhf-map" target="_blank">https://github.com/gregallensworth/ham-uhfvhf-map</a>
-            </div>
-        </div>
-    </footer>
-
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-FNFB2MZF66"></script>
-    <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-FNFB2MZF66');
-    </script>
 </body>
 </html>
