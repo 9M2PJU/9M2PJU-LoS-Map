@@ -54,7 +54,7 @@
     }
 
     h5, .fw-bold {
-      font-size: 1.1rem;
+      font-size: 1rem; /* Slightly smaller for cards */
       color: var(--accent-color);
     }
 
@@ -75,11 +75,11 @@
     #elevationprofile {
       flex: 1;
       width: 100%;
-      min-height: 200px;
+      min-height: 150px; /* Reduced min-height for elevation chart */
     }
 
     #map {
-      height: 70vh;
+      height: 80vh; /* Bigger map on desktop */
       margin-top: 1rem;
       border-radius: 0.5rem;
       border: 1px solid #333;
@@ -138,12 +138,17 @@
       font-size: 0.8rem;
     }
 
-    .shadow-sm {
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.6) !important;
+    p {
+        font-size: 0.85rem; /* Smaller paragraph text in cards */
     }
 
-    p {
-        font-size: 0.9rem;
+    .card p {
+        margin-bottom: 0.5rem; /* Reduce space between paragraphs in cards */
+    }
+
+    /* Adjust font size for specific elements in readouts if needed */
+    #readouts span[data-readout] {
+        font-size: 0.85rem;
     }
 
     @media (max-width: 767px) {
@@ -156,11 +161,31 @@
       .text-muted {
         font-size: 0.85rem;
       }
+      /* Reset column behavior for smaller screens */
+      .col-md-auto-card {
+        flex: 0 0 auto;
+        width: 100%;
+      }
+      .col-lg-3-card {
+        flex: 0 0 auto;
+        width: 100%;
+      }
+    }
+
+    @media (min-width: 768px) {
+      .col-md-auto-card {
+        flex: 0 0 auto;
+        width: auto; /* Allow content to dictate width */
+      }
     }
 
     @media (min-width: 992px) {
       #map {
-        height: 75vh;
+        height: 85vh; /* Even bigger map on larger desktop screens */
+      }
+      .col-lg-3-card {
+        flex: 0 0 auto;
+        width: 25%; /* Fixed width for card columns on large screens */
       }
     }
   </style>
@@ -199,8 +224,7 @@
     <form id="searchform" onsubmit="return false;">
       <div class="row g-3">
         <div class="col-md-6">
-          <div class="card p-3">
-            <h5 class="fw-bold text-center">📡 Transmitting Location</h5>
+          <div class="card p-2"> <h5 class="fw-bold text-center">📡 Transmitting Location</h5>
             <div class="input-group mb-2">
               <span class="input-group-text">Lat,lng or address</span>
               <input type="text" name="xaddr" class="form-control text-end" placeholder="e.g., address or 1.2345,103.5678">
@@ -215,8 +239,7 @@
         </div>
 
         <div class="col-md-6">
-          <div class="card p-3">
-            <h5 class="fw-bold text-center">📻 Receiving Location</h5>
+          <div class="card p-2"> <h5 class="fw-bold text-center">📻 Receiving Location</h5>
             <div class="input-group mb-2">
               <span class="input-group-text">Lat,lng or address</span>
               <input type="text" name="raddr" class="form-control text-end" placeholder="e.g., address or 1.2345,103.5678">
@@ -234,10 +257,8 @@
 
     <div class="container mt-4 d-none" id="readouts">
       <div class="row g-3 align-items-stretch">
-      <div class="col-md-6">
-          <div class="card p-3 same-height">
-            <h5 class="fw-bold">Distance and Bearing</h5>
-            <p>
+        <div class="col-md-6 col-md-auto-card col-lg-3-card"> 
+          <div class="card p-2 same-height"> <h5 class="fw-bold">Distance & Bearing</h5> <p>
               Distance: <span data-readout="distance_mi"></span> mi, <span data-readout="distance_km"></span> km<br>
               Horizon: <span data-readout="horizon_mi"></span> mi, <span data-readout="horizon_km"></span> km
               <span class="text-danger d-none fw-bold" id="insufficienthorizon">
@@ -252,9 +273,8 @@
           </div>
         </div>
 
-        <div class="col-md-6">
-          <div class="card p-3 same-height">
-            <h5 class="fw-bold">Elevation Profile</h5>
+        <div class="col-md-6 col-md-auto-card col-lg-3-card"> 
+          <div class="card p-2 same-height"> <h5 class="fw-bold">Elevation Profile</h5>
             <div id="elevationprofile"></div>
           </div>
         </div>
@@ -288,13 +308,13 @@
           text: 'Distance (km)',
           style: {
             color: '#f0f0f0',
-            fontSize: '0.8rem'
+            fontSize: '0.75rem' /* Even smaller for axis titles */
           }
         },
         labels: {
           style: {
             color: '#f0f0f0',
-            fontSize: '0.75rem'
+            fontSize: '0.7rem' /* Even smaller for axis labels */
           }
         },
         lineColor: '#555',
@@ -305,13 +325,13 @@
           text: 'Elevation (m)',
           style: {
             color: '#f0f0f0',
-            fontSize: '0.8rem'
+            fontSize: '0.75rem' /* Even smaller for axis titles */
           }
         },
         labels: {
           style: {
             color: '#f0f0f0',
-            fontSize: '0.75rem'
+            fontSize: '0.7rem' /* Even smaller for axis labels */
           }
         },
         gridLineColor: '#333',
@@ -324,7 +344,7 @@
         borderColor: '#555',
         style: {
           color: '#f0f0f0',
-          fontSize: '0.85rem'
+          fontSize: '0.8rem' /* Slightly smaller tooltip font */
         }
       },
       plotOptions: {
