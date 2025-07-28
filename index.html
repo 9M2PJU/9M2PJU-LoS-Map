@@ -44,17 +44,9 @@
       font-family: 'Segoe UI', sans-serif;
       background-color: var(--bg-color);
       color: var(--text-color);
-      min-height: auto; 
-      font-size: 0.9rem;
     }
 
-    h1 {
-      font-size: 2.2rem;
-      color: var(--accent-color);
-    }
-
-    h5, .fw-bold {
-      font-size: 1.1rem;
+    h1, h5, .fw-bold {
       color: var(--accent-color);
     }
 
@@ -79,7 +71,7 @@
     }
 
     #map {
-      height: 70vh; /* Base height for map */
+      height: 60vh;
       margin-top: 1rem;
       border-radius: 0.5rem;
       border: 1px solid #333;
@@ -96,20 +88,17 @@
       background-color: var(--input-bg);
       color: var(--text-color);
       border: 1px solid #444;
-      font-size: 0.85rem;
     }
 
     input.form-control, input.form-control:focus {
       background-color: var(--input-bg);
       color: var(--input-text);
       border: 1px solid #555;
-      font-size: 0.9rem;
     }
 
     button.btn-outline-primary {
       color: var(--accent-color);
       border-color: var(--accent-color);
-      font-size: 0.9rem;
     }
 
     button.btn-outline-primary:hover {
@@ -120,7 +109,6 @@
     .accordion-button {
       background-color: var(--card-bg);
       color: var(--text-color);
-      font-size: 0.95rem;
     }
 
     .accordion-button:focus {
@@ -130,82 +118,19 @@
     .accordion-body {
       background-color: var(--bg-color);
       color: var(--text-color);
-      font-size: 0.85rem;
     }
 
     .text-muted {
       color: #aaaaaa !important;
-      font-size: 0.8rem;
     }
 
     .shadow-sm {
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.6) !important;
     }
 
-    p {
-        font-size: 0.9rem;
-    }
-
-    /* Desktop specific layout adjustments for cards and map */
-    @media (min-width: 992px) { /* Applies from large desktops and up */
+    @media (max-width: 767px) {
       #map {
-        height: 80vh; /* Significantly increase map height for desktop */
-      }
-      
-      #readouts .row {
-        flex-wrap: nowrap; /* Prevent cards from wrapping to new row */
-        justify-content: center; /* Center the two cards */
-        margin-bottom: 1rem; /* Add some space below cards before map */
-      }
-
-      #readouts .col-md-6 { /* Target the column containing each card */
-        flex: 0 0 auto; /* Prevent column from growing/shrinking */
-        width: 25%; /* Set a fixed width (e.g., 25% for two cards = 50% total) */
-        max-width: 300px; /* Optional: cap max width to prevent distortion on very wide screens */
-      }
-
-      /* Adjust card padding for a more compact look on desktop */
-      #readouts .card {
-          padding: 0.75rem !important; /* Smaller padding for desktop cards */
-      }
-
-      #readouts h5 {
-          font-size: 1rem; /* Slightly smaller heading in readouts */
-      }
-
-      #readouts p {
-          font-size: 0.8rem; /* Smaller paragraph text in readouts */
-          margin-bottom: 0.3rem; /* Reduce space between text lines */
-      }
-
-      #readouts span[data-readout] {
-          font-size: 0.8rem; /* Smaller readout values */
-      }
-
-      #elevationprofile {
-          min-height: 180px; /* Adjust min-height for the chart if needed */
-      }
-    }
-
-    /* Mobile adjustments (keep similar to previous to ensure good mobile experience) */
-    @media (max-width: 991.98px) { /* Applies to smaller screens */
-      #map {
-        height: 50vh; /* Keep map height reasonable on mobile */
-      }
-      body {
-        font-size: 0.95rem; /* Slightly larger on mobile for readability */
-      }
-      .text-muted {
-        font-size: 0.85rem;
-      }
-      /* Ensure cards stack on small screens by reverting width overrides */
-      #readouts .col-md-6 {
-        width: 100%; /* Full width on mobile */
-        margin-bottom: 1rem; /* Space between stacked cards */
-      }
-      #readouts .row {
-        flex-wrap: wrap; /* Allow wrapping on small screens */
-        justify-content: flex-start;
+        height: 50vh;
       }
     }
   </style>
@@ -278,8 +203,9 @@
     </form>
 
     <div class="container mt-4 d-none" id="readouts">
-      <div class="row g-3 align-items-stretch justify-content-center">
-        <div class="col-md-6 col-lg-3"> <div class="card p-3 same-height">
+      <div class="row g-3 align-items-stretch">
+      <div class="col-md-6">
+          <div class="card p-3 same-height">
             <h5 class="fw-bold">Distance and Bearing</h5>
             <p>
               Distance: <span data-readout="distance_mi"></span> mi, <span data-readout="distance_km"></span> km<br>
@@ -296,7 +222,8 @@
           </div>
         </div>
 
-        <div class="col-md-6 col-lg-3"> <div class="card p-3 same-height">
+        <div class="col-md-6">
+          <div class="card p-3 same-height">
             <h5 class="fw-bold">Elevation Profile</h5>
             <div id="elevationprofile"></div>
           </div>
@@ -306,105 +233,6 @@
 
     <div id="map" class="rounded shadow-sm"></div>
   </main>
-
-  <script>
-    Highcharts.chart('elevationprofile', {
-      chart: {
-        type: 'area',
-        backgroundColor: 'transparent',
-        height: null,
-        zoomType: 'x',
-        panning: true,
-        panKey: 'shift'
-      },
-      title: {
-        text: null
-      },
-      credits: {
-        enabled: false
-      },
-      exporting: {
-        enabled: false
-      },
-      xAxis: {
-        title: {
-          text: 'Distance (km)',
-          style: {
-            color: '#f0f0f0',
-            fontSize: '0.8rem'
-          }
-        },
-        labels: {
-          style: {
-            color: '#f0f0f0',
-            fontSize: '0.75rem'
-          }
-        },
-        lineColor: '#555',
-        tickColor: '#555'
-      },
-      yAxis: {
-        title: {
-          text: 'Elevation (m)',
-          style: {
-            color: '#f0f0f0',
-            fontSize: '0.8rem'
-          }
-        },
-        labels: {
-          style: {
-            color: '#f0f0f0',
-            fontSize: '0.75rem'
-          }
-        },
-        gridLineColor: '#333',
-        lineColor: '#555',
-        tickColor: '#555'
-      },
-      tooltip: {
-        pointFormat: '<span style="color:{series.color}">\u25CF</span> {series.name}: <b>{point.y:.0f} m</b> at <b>{point.x:.2f} km</b><br/>',
-        backgroundColor: 'rgba(30, 30, 30, 0.85)',
-        borderColor: '#555',
-        style: {
-          color: '#f0f0f0',
-          fontSize: '0.85rem'
-        }
-      },
-      plotOptions: {
-        area: {
-          fillColor: {
-            linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
-            stops: [
-              [0, Highcharts.getOptions().colors[0]],
-              [1, Highcharts.color(Highcharts.getOptions().colors[0]).setOpacity(0).get('rgba')]
-            ]
-          },
-          marker: {
-            enabled: false,
-            states: {
-              hover: {
-                enabled: true,
-                radius: 5
-              }
-            }
-          },
-          lineWidth: 2,
-          states: {
-            hover: {
-              lineWidth: 3
-            }
-          },
-          threshold: null
-        }
-      },
-      series: [{
-        name: 'Elevation',
-        data: [],
-        color: '#0d6efd',
-        lineColor: '#0d6efd'
-      }]
-    });
-  </script>
 </body>
 
 </html>
