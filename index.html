@@ -1,53 +1,35 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>9M2PJU Line-of-Sight Map</title>
-
-  <meta name="description" content="Estimate and visualize line-of-sight communication paths for UHF (70 cm) and VHF (2 m) amateur radio using real terrain data.">
-  <meta name="keywords" content="line of sight, communication, radio, elevation, path, VHF, UHF, ham radio, Malaysia, repeater planning, terrain analysis">
-  <meta property="og:title" content="9M2PJU Line-of-Sight Map">
-  <meta property="og:description" content="Estimate and visualize line-of-sight communication paths for UHF (70 cm) and VHF (2 m) amateur radio using real terrain data.">
-  <meta property="og:url" content="https://los.hamradio.my">
-  <meta name="twitter:card" content="summary_large_image">
-  <link rel="shortcut icon" href="favicon.png" type="image/x-icon" />
-
+  <title>UHF/VHF Line-of-Sight Calculator</title>
+  <meta name="description" content="Visual tool for line-of-sight UHF/VHF amateur radio path checking with elevation profile, distance and bearing calculation.">
+  <meta property="og:title" content="UHF/VHF Line-of-Sight Calculator" />
+  <meta property="og:description" content="Check elevation, distance and bearing between any two points. Ideal for ham radio VHF/UHF line-of-sight checks." />
+  <meta property="og:url" content="https://radiocalculator.xyz/" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="theme-color" content="#000000" />
+  <link rel="icon" href="favicon.png" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
-  <script src="https://code.highcharts.com/highcharts.js"></script>
-  <script src="https://code.highcharts.com/themes/dark-unica.js"></script>
-  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-
-  <link rel="stylesheet" href="index.css" />
-  <script src="index.js"></script>
-
   <style>
     :root {
-      --bg-color: #121212;
-      --text-color: #f0f0f0;
-      --card-bg: #1e1e1e;
-      --input-bg: #2c2c2c;
-      --input-text: #f0f0f0;
+      --background-color: #121212;
+      --text-color: #ffffff;
+      --card-color: #1e1e1e;
       --accent-color: #0d6efd;
     }
 
-    html,
-    body {
+    html, body {
       height: 100%;
       margin: 0;
-      padding: 0;
-      background-color: var(--bg-color);
+      background-color: var(--background-color);
       color: var(--text-color);
+      overflow: hidden;
     }
 
     body {
-      font-family: 'Segoe UI', sans-serif;
       display: flex;
       flex-direction: column;
     }
@@ -60,21 +42,26 @@
     }
 
     #map {
-      flex: 1 0 50%;
-      min-height: 40vh;
-      border-radius: 0.5rem;
-      border: 1px solid #333;
+      flex: 0 0 50%;
+      min-height: 300px;
     }
 
-    #readouts {
-      flex: 1 0 50%;
-      overflow: hidden;
+    #panel {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1rem;
     }
 
     .same-height {
       height: 100%;
       display: flex;
       flex-direction: column;
+      background-color: var(--card-color);
+      color: var(--text-color);
+    }
+
+    .card-body {
+      flex: 1;
     }
 
     #elevationprofile {
@@ -83,170 +70,83 @@
       width: 100%;
     }
 
-    .card {
-      border-radius: 1rem;
-      background-color: var(--card-bg);
-      box-shadow: 0 0 15px rgba(0, 0, 0, 0.4);
-      color: var(--text-color);
-    }
-
-    h1,
-    h5,
-    .fw-bold {
-      color: var(--accent-color);
-    }
-
-    a {
-      color: #66bfff;
-    }
-
-    a:hover {
-      color: #88ccff;
-    }
-
-    .input-group-text {
-      background-color: var(--input-bg);
-      color: var(--text-color);
-      border: 1px solid #444;
-    }
-
-    input.form-control,
-    input.form-control:focus {
-      background-color: var(--input-bg);
-      color: var(--input-text);
-      border: 1px solid #555;
-    }
-
-    button.btn-outline-primary {
-      color: var(--accent-color);
-      border-color: var(--accent-color);
-    }
-
-    button.btn-outline-primary:hover {
-      background-color: var(--accent-color);
-      color: #fff;
-    }
-
-    .accordion-button {
-      background-color: var(--card-bg);
-      color: var(--text-color);
-    }
-
-    .accordion-body {
-      background-color: var(--bg-color);
-    }
-
-    .text-muted {
-      color: #aaaaaa !important;
-    }
-
-    .shadow-sm {
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.6) !important;
-    }
-
-    @media (max-width: 767px) {
+    @media (max-width: 768px) {
       #map {
-        height: 50vh;
+        flex: 0 0 40%;
+        min-height: 200px;
+      }
+
+      #panel {
+        padding: 0.5rem;
+      }
+
+      .card {
+        margin-bottom: 1rem;
       }
     }
   </style>
 </head>
-
 <body>
-  <main class="container-fluid py-3">
-    <div class="text-center mb-4">
-      <h1 class="fw-bold text-primary">9M2PJU Line-of-Sight Map</h1>
-      <p>This tool helps identify potential line-of-sight paths for UHF (70 cm) and VHF (2 m) amateur radio communications bands.</p>
-      <p>Enter an address or coordinates for both locations. Drag the map markers to refine your positions and see terrain profiles.</p>
-      <p class="text-muted small">Note: Results are terrain-based estimates. Real-world obstacles like buildings or trees may affect accuracy.</p>
-    </div>
+  <main>
+    <div id="map"></div>
 
-    <div class="accordion mb-3" id="accordionHelp">
-      <div class="accordion-item">
-        <h2 class="accordion-header" id="headingOne">
-          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#instructions">
-            📍 How to get coordinates from RepeaterBook
-          </button>
-        </h2>
-        <div id="instructions" class="accordion-collapse collapse" data-bs-parent="#accordionHelp">
-          <div class="accordion-body">
-            <ol>
-              <li>Go to a repeater page on RepeaterBook (e.g., <a href="https://www.repeaterbook.com/repeaters/details.php?state_id=41&ID=365" target="_blank">example</a>).</li>
-              <li>Open Developer Console with <code>F12</code>, switch to the Console tab.</li>
-              <li>Paste this code: <code>mymap.getCenter().lat + ',' + mymap.getCenter().lng</code></li>
-              <li>If prompted, type <code>allow pasting</code> to proceed.</li>
-              <li>Copy the output and paste it into the form below.</li>
-            </ol>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <form id="searchform" onsubmit="return false;">
-      <div class="row g-3">
+    <div id="panel" class="container-fluid mt-2">
+      <div class="row g-3 align-items-stretch">
+        <!-- Distance and Bearing Card -->
         <div class="col-md-6">
-          <div class="card p-3">
-            <h5 class="fw-bold text-center">📡 Transmitting Location</h5>
-            <div class="input-group mb-2">
-              <span class="input-group-text">Lat,lng or address</span>
-              <input type="text" name="xaddr" class="form-control text-end" placeholder="e.g., address or 1.2345,103.5678">
-              <button type="button" class="btn btn-outline-primary" name="xsearchgo">Find</button>
-            </div>
-            <div class="input-group">
-              <span class="input-group-text">Mast height</span>
-              <input type="number" name="xheight" value="0" min="0" max="500" step="1" class="form-control text-end">
-              <span class="input-group-text">ft</span>
+          <div class="card p-3 same-height">
+            <div class="card-body">
+              <h5 class="card-title">Distance and Bearing</h5>
+              <p id="distance">Distance: --</p>
+              <p id="bearing">Bearing: --</p>
+              <p id="midpoint">Midpoint: --</p>
             </div>
           </div>
         </div>
 
+        <!-- Elevation Profile Card -->
         <div class="col-md-6">
-          <div class="card p-3">
-            <h5 class="fw-bold text-center">📻 Receiving Location</h5>
-            <div class="input-group mb-2">
-              <span class="input-group-text">Lat,lng or address</span>
-              <input type="text" name="raddr" class="form-control text-end" placeholder="e.g., address or 1.2345,103.5678">
-              <button type="button" class="btn btn-outline-primary" name="rsearchgo">Find</button>
-            </div>
-            <div class="input-group">
-              <span class="input-group-text">Mast height</span>
-              <input type="number" name="rheight" value="0" min="0" max="500" step="1" class="form-control text-end">
-              <span class="input-group-text">ft</span>
+          <div class="card p-3 same-height">
+            <div class="card-body">
+              <h5 class="card-title">Elevation Profile</h5>
+              <div id="elevationprofile"></div>
             </div>
           </div>
-        </div>
-      </div>
-    </form>
-
-    <div id="map" class="my-4 shadow-sm"></div>
-
-    <div class="row g-3 align-items-stretch flex-grow-1" id="readouts">
-      <div class="col-md-6">
-        <div class="card p-3 same-height">
-          <h5 class="fw-bold">Distance and Bearing</h5>
-          <p>
-            Distance: <span data-readout="distance_mi"></span> mi, <span data-readout="distance_km"></span> km<br>
-            Horizon: <span data-readout="horizon_mi"></span> mi, <span data-readout="horizon_km"></span> km
-            <span class="text-danger d-none fw-bold" id="insufficienthorizon">
-              <br>Distance exceeds horizon. Contact unlikely.
-            </span>
-          </p>
-          <p>
-            Elevation (Tx): <span data-readout="transmit_elevation_ft"></span> ft, <span data-readout="transmit_elevation_m"></span> m<br>
-            Elevation (Rx): <span data-readout="receive_elevation_ft"></span> ft, <span data-readout="receive_elevation_m"></span> m
-          </p>
-          <p>Bearing: <span data-readout="bearing_deg"></span>&deg;, <span data-readout="bearing_txt"></span></p>
-        </div>
-      </div>
-
-      <div class="col-md-6">
-        <div class="card p-3 same-height">
-          <h5 class="fw-bold">Elevation Profile</h5>
-          <div id="elevationprofile"></div>
         </div>
       </div>
     </div>
   </main>
-</body>
 
+  <!-- JS Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://code.highcharts.com/highcharts.js"></script>
+
+  <!-- Optional: Your map & chart JS here -->
+  <script>
+    // Example Leaflet map setup
+    const map = L.map('map').setView([3.139, 101.6869], 10);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Example dummy Highcharts elevation profile
+    Highcharts.chart('elevationprofile', {
+      chart: {
+        type: 'area',
+        backgroundColor: 'transparent',
+        height: null
+      },
+      title: { text: null },
+      xAxis: { title: { text: 'Distance (km)' } },
+      yAxis: { title: { text: 'Elevation (m)' } },
+      series: [{
+        name: 'Elevation',
+        data: [100, 150, 120, 170, 160, 130, 110]
+      }],
+      credits: { enabled: false }
+    });
+  </script>
+</body>
 </html>
