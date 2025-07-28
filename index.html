@@ -79,7 +79,7 @@
     }
 
     #map {
-      height: 70vh;
+      height: 70vh; /* Base height for map */
       margin-top: 1rem;
       border-radius: 0.5rem;
       border: 1px solid #333;
@@ -146,21 +146,66 @@
         font-size: 0.9rem;
     }
 
-    @media (max-width: 767px) {
+    /* Desktop specific layout adjustments for cards and map */
+    @media (min-width: 992px) { /* Applies from large desktops and up */
       #map {
-        height: 50vh;
+        height: 80vh; /* Significantly increase map height for desktop */
+      }
+      
+      #readouts .row {
+        flex-wrap: nowrap; /* Prevent cards from wrapping to new row */
+        justify-content: center; /* Center the two cards */
+        margin-bottom: 1rem; /* Add some space below cards before map */
+      }
+
+      #readouts .col-md-6 { /* Target the column containing each card */
+        flex: 0 0 auto; /* Prevent column from growing/shrinking */
+        width: 25%; /* Set a fixed width (e.g., 25% for two cards = 50% total) */
+        max-width: 300px; /* Optional: cap max width to prevent distortion on very wide screens */
+      }
+
+      /* Adjust card padding for a more compact look on desktop */
+      #readouts .card {
+          padding: 0.75rem !important; /* Smaller padding for desktop cards */
+      }
+
+      #readouts h5 {
+          font-size: 1rem; /* Slightly smaller heading in readouts */
+      }
+
+      #readouts p {
+          font-size: 0.8rem; /* Smaller paragraph text in readouts */
+          margin-bottom: 0.3rem; /* Reduce space between text lines */
+      }
+
+      #readouts span[data-readout] {
+          font-size: 0.8rem; /* Smaller readout values */
+      }
+
+      #elevationprofile {
+          min-height: 180px; /* Adjust min-height for the chart if needed */
+      }
+    }
+
+    /* Mobile adjustments (keep similar to previous to ensure good mobile experience) */
+    @media (max-width: 991.98px) { /* Applies to smaller screens */
+      #map {
+        height: 50vh; /* Keep map height reasonable on mobile */
       }
       body {
-        font-size: 0.95rem;
+        font-size: 0.95rem; /* Slightly larger on mobile for readability */
       }
       .text-muted {
         font-size: 0.85rem;
       }
-    }
-
-    @media (min-width: 992px) {
-      #map {
-        height: 75vh;
+      /* Ensure cards stack on small screens by reverting width overrides */
+      #readouts .col-md-6 {
+        width: 100%; /* Full width on mobile */
+        margin-bottom: 1rem; /* Space between stacked cards */
+      }
+      #readouts .row {
+        flex-wrap: wrap; /* Allow wrapping on small screens */
+        justify-content: flex-start;
       }
     }
   </style>
@@ -233,9 +278,8 @@
     </form>
 
     <div class="container mt-4 d-none" id="readouts">
-      <div class="row g-3 align-items-stretch">
-      <div class="col-md-6">
-          <div class="card p-3 same-height">
+      <div class="row g-3 align-items-stretch justify-content-center">
+        <div class="col-md-6 col-lg-3"> <div class="card p-3 same-height">
             <h5 class="fw-bold">Distance and Bearing</h5>
             <p>
               Distance: <span data-readout="distance_mi"></span> mi, <span data-readout="distance_km"></span> km<br>
@@ -252,8 +296,7 @@
           </div>
         </div>
 
-        <div class="col-md-6">
-          <div class="card p-3 same-height">
+        <div class="col-md-6 col-lg-3"> <div class="card p-3 same-height">
             <h5 class="fw-bold">Elevation Profile</h5>
             <div id="elevationprofile"></div>
           </div>
