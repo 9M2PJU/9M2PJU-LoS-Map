@@ -40,11 +40,14 @@
       --accent-color: #0d6efd;
     }
 
-    html, body {
-      height: 100%; /* Essential for viewport height calculations */
+    html,
+    body {
+      height: 100%;
+      /* Essential for viewport height calculations */
       margin: 0;
       padding: 0;
-      overflow: hidden; /* Prevent body scrollbar by default */
+      overflow: hidden;
+      /* Prevent body scrollbar by default on desktop */
       font-family: 'Segoe UI', sans-serif;
       background-color: var(--bg-color);
       color: var(--text-color);
@@ -53,25 +56,32 @@
     main {
       display: flex;
       flex-direction: column;
-      height: 100%; /* Make main fill the body height */
-      padding-top: 1rem !important; /* Minimal top padding */
-      padding-bottom: 1rem !important; /* Minimal bottom padding */
-      box-sizing: border-box; /* Include padding in height calculation */
+      height: 100%;
+      /* Make main fill the body height */
+      padding-top: 1rem !important;
+      /* Minimal top padding */
+      padding-bottom: 1rem !important;
+      /* Minimal bottom padding */
+      box-sizing: border-box;
+      /* Include padding in height calculation */
     }
 
     /* Set fixed sizes/shrink behavior for elements above the map */
-    .text-center.mb-4, 
-    .accordion.mb-3, 
+    .text-center.mb-4,
+    .accordion.mb-3,
     form#searchform {
-        flex-shrink: 0; /* Prevent these sections from shrinking */
+      flex-shrink: 0;
+      /* Prevent these sections from shrinking */
     }
 
     .text-center.mb-4 {
-        margin-bottom: 0.75rem !important; /* Reduced margin */
+      margin-bottom: 0.75rem !important;
+      /* Reduced margin */
     }
 
     .accordion.mb-3 {
-        margin-bottom: 0.75rem !important; /* Reduced margin */
+      margin-bottom: 0.75rem !important;
+      /* Reduced margin */
     }
 
     h1 {
@@ -80,7 +90,8 @@
       margin-bottom: 0.5rem;
     }
 
-    h5, .fw-bold {
+    h5,
+    .fw-bold {
       font-size: 1.1rem;
       color: var(--accent-color);
     }
@@ -92,7 +103,7 @@
     a:hover {
       color: #88ccff;
     }
-    
+
     .same-height {
       height: 100%;
       display: flex;
@@ -102,15 +113,19 @@
     #elevationprofile {
       flex: 1;
       width: 100%;
-      min-height: 120px; /* Reduced min-height for chart */
+      min-height: 120px;
+      /* Reduced min-height for chart */
     }
 
     #map {
-      flex-grow: 1; /* Map will grow to fill remaining space */
-      margin-top: 0.75rem; /* Reduced margin */
+      flex-grow: 1;
+      /* Map will grow to fill remaining space */
+      margin-top: 0.75rem;
+      /* Reduced margin */
       border-radius: 0.5rem;
       border: 1px solid #333;
-      min-height: 300px; /* Ensure a minimum height for the map */
+      min-height: 300px;
+      /* Ensure a reasonable minimum height for the map */
     }
 
     .card {
@@ -118,7 +133,8 @@
       background-color: var(--card-bg);
       box-shadow: 0 0 15px rgba(0, 0, 0, 0.4);
       color: var(--text-color);
-      padding: 0.75rem !important; /* Reduced default card padding */
+      padding: 0.75rem !important;
+      /* Reduced default card padding */
     }
 
     .input-group-text {
@@ -128,7 +144,8 @@
       font-size: 0.85rem;
     }
 
-    input.form-control, input.form-control:focus {
+    input.form-control,
+    input.form-control:focus {
       background-color: var(--input-bg);
       color: var(--input-text);
       border: 1px solid #555;
@@ -150,7 +167,8 @@
       background-color: var(--card-bg);
       color: var(--text-color);
       font-size: 0.95rem;
-      padding: 0.75rem 1.25rem; /* Reduced accordion button padding */
+      padding: 0.75rem 1.25rem;
+      /* Reduced accordion button padding */
     }
 
     .accordion-button:focus {
@@ -161,7 +179,8 @@
       background-color: var(--bg-color);
       color: var(--text-color);
       font-size: 0.85rem;
-      padding: 0.75rem 1.25rem; /* Reduced accordion body padding */
+      padding: 0.75rem 1.25rem;
+      /* Reduced accordion body padding */
     }
 
     .text-muted {
@@ -174,83 +193,98 @@
     }
 
     p {
-        font-size: 0.85rem;
-        margin-bottom: 0.4rem;
+      font-size: 0.85rem;
+      margin-bottom: 0.4rem;
     }
-    
+
     form#searchform .row.g-3 {
-        --bs-gutter-y: 0.75rem;
+      --bs-gutter-y: 0.75rem;
     }
 
     /* Readouts container specific styling */
     #readouts {
-        flex-shrink: 0; /* Prevent readout cards section from shrinking */
-        margin-top: 0.75rem !important; /* Reduced top margin */
-        margin-bottom: 0.75rem !important; /* Reduced bottom margin */
-        /* This container is a Bootstrap .container, which adds horizontal padding. */
-        /* We can remove its default vertical padding if it interferes with main's flex */
-        padding-top: 0;
-        padding-bottom: 0;
+      flex-shrink: 0;
+      /* Prevent readout cards section from shrinking */
+      margin-top: 0.75rem !important;
+      /* Reduced top margin */
+      margin-bottom: 0.75rem !important;
+      /* Reduced bottom margin */
+      /* No .container here, letting it stretch with Bootstrap's grid */
+      padding-top: 0;
+      padding-bottom: 0;
     }
 
     #readouts .row {
-        --bs-gutter-x: 1.5rem; /* Standard Bootstrap gutter for spacing between cards */
-        justify-content: center; /* Center the cards */
+      --bs-gutter-x: 1.5rem;
+      /* Standard Bootstrap gutter for spacing between cards */
+      justify-content: center;
+      /* Center the cards */
     }
 
-    #readouts .col-md-6 { 
-      /* These columns are children of a Bootstrap row.
-         We define their width relative to the 12-column grid. */
-      /* For a good desktop fit, let's try col-lg-4, which means each card takes 1/3 of the width. */
-      /* Two col-lg-4 side-by-side will take 8/12 = 2/3 of the row width, which looks good. */
-      width: auto; /* Let Bootstrap's col classes manage width */
-      flex-grow: 1; /* Allow cards to grow if space permits within their column limit */
-      max-width: 400px; /* A reasonable max-width for each card on very wide screens */
+    /* Keep .col-md-6 for consistency with input cards */
+    #readouts .col-md-6 {
+      /* Remove max-width to allow them to scale like input cards */
+      max-width: unset; 
     }
 
     #readouts .card {
-        padding: 0.75rem !important; /* Keep a decent padding for readability */
+      padding: 0.75rem !important;
+      /* Keep a decent padding for readability */
     }
 
     #readouts h5 {
-        font-size: 1rem;
-        margin-bottom: 0.5rem;
+      font-size: 1rem;
+      margin-bottom: 0.5rem;
     }
 
     #readouts p {
-        font-size: 0.85rem;
-        margin-bottom: 0.3rem;
+      font-size: 0.85rem;
+      margin-bottom: 0.3rem;
     }
 
     #readouts span[data-readout] {
-        font-size: 0.85rem;
+      font-size: 0.85rem;
     }
 
     /* Mobile (smaller than 992px) adjustments */
     @media (max-width: 991.98px) {
-      html, body {
-        overflow-y: auto; /* Re-enable scroll on mobile if content overflows */
+      html,
+      body {
+        overflow-y: auto;
+        /* Re-enable scroll on mobile if content overflows */
       }
+
       main {
-        height: auto; /* Allow main to expand on mobile */
+        height: auto;
+        /* Allow main to expand on mobile */
         padding-top: 1rem !important;
         padding-bottom: 1rem !important;
       }
+
       #map {
-        height: 50vh; /* Fixed height for map on mobile */
-        min-height: unset; /* Remove min-height override for mobile */
+        height: 50vh;
+        /* Fixed height for map on mobile */
+        min-height: unset;
+        /* Remove min-height override for mobile */
       }
+
       .text-muted {
         font-size: 0.85rem;
       }
+
       /* Ensure cards stack on small screens */
       #readouts .col-md-6 {
-        width: 100%; /* Full width on mobile */
-        margin-bottom: 0.75rem; /* Space between stacked cards */
-        max-width: unset; /* Remove max-width for mobile */
+        width: 100%;
+        /* Full width on mobile */
+        margin-bottom: 0.75rem;
+        /* Space between stacked cards */
+        max-width: unset;
+        /* Remove max-width for mobile */
       }
+
       #readouts .row {
-        flex-wrap: wrap; /* Allow wrapping on small screens */
+        flex-wrap: wrap;
+        /* Allow wrapping on small screens */
         justify-content: flex-start;
       }
     }
@@ -258,7 +292,8 @@
 </head>
 
 <body class="d-flex flex-column min-vh-100">
-  <main class="flex-grow-1 container"> <div class="text-center mb-4">
+  <main class="flex-grow-1 container">
+    <div class="text-center mb-4">
       <h1 class="fw-bold text-primary">9M2PJU Line-of-Sight Map</h1>
       <p>This tool helps identify potential line-of-sight paths for UHF (70 cm) and VHF (2 m) amateur radio communications bands where terrain and obstructions often have a greater impact than atmospheric conditions.</p>
       <p>Enter an address or coordinates for both locations. Drag the map markers to refine your positions and see terrain profiles.</p>
@@ -322,9 +357,10 @@
       </div>
     </form>
 
-    <div class="mt-4 d-none" id="readouts"> 
+    <div class="mt-4 d-none" id="readouts">
       <div class="row g-3 align-items-stretch justify-content-center">
-        <div class="col-md-6 col-lg-4"> <div class="card p-3 same-height">
+        <div class="col-md-6">
+          <div class="card p-3 same-height">
             <h5 class="fw-bold">Distance and Bearing</h5>
             <p>
               Distance: <span data-readout="distance_mi"></span> mi, <span data-readout="distance_km"></span> km<br>
@@ -341,7 +377,8 @@
           </div>
         </div>
 
-        <div class="col-md-6 col-lg-4"> <div class="card p-3 same-height">
+        <div class="col-md-6">
+          <div class="card p-3 same-height">
             <h5 class="fw-bold">Elevation Profile</h5>
             <div id="elevationprofile"></div>
           </div>
@@ -418,7 +455,12 @@
       plotOptions: {
         area: {
           fillColor: {
-            linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+            linearGradient: {
+              x1: 0,
+              y1: 0,
+              x2: 0,
+              y2: 1
+            },
             stops: [
               [0, Highcharts.getOptions().colors[0]],
               [1, Highcharts.color(Highcharts.getOptions().colors[0]).setOpacity(0).get('rgba')]
