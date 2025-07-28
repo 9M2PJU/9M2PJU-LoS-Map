@@ -44,10 +44,9 @@
       font-family: 'Segoe UI', sans-serif;
       background-color: var(--bg-color);
       color: var(--text-color);
-      /* Ensure no default margin/padding on body from browser */
       margin: 0; 
       padding: 0;
-      overflow-y: hidden; /* Hide scrollbar by default, expecting perfect fit */
+      overflow-y: hidden; /* Hide scrollbar by default on desktop */
     }
 
     /* Main container to manage overall height */
@@ -184,61 +183,56 @@
       
       #map {
         /* Map height is controlled by flex-grow: 1, 
-           but can set a min-height if needed.
-           This means it will take *all* available vertical space. */
-        min-height: 400px; /* Ensure a reasonable minimum height */
+           it will take *all* available vertical space. */
+        min-height: 400px; /* Ensure a reasonable minimum height for the map */
       }
 
-      /* Specific adjustment when #readouts is visible (uncommented by JS) */
-      /* This rule takes precedence and will make the map shorter to accommodate cards */
-      #readouts:not(.d-none) + #map {
-        /* We need to calculate this based on header, input, readouts.
-           Rough estimation:
-           Header: ~80px
-           Input forms: ~150px
-           Readout cards: ~220px (with small padding)
-           Total overhead: ~450px. If viewport is 900px, map is 450px -> 50vh.
-           If viewport is 1080px, map is 630px -> ~58vh.
-           Setting a percentage here is tricky, letting flexbox handle it is better.
-           The flex-grow on #map should do the trick. */
-      }
-
-      #readouts .col-md-6 { /* Target the column containing each card */
-        flex: 0 0 auto;
-        width: 280px; /* Fixed width for compact cards */
-        max-width: 280px; /* Ensure they don't grow */
-        margin-right: 0.75rem; /* Small space between cards */
-      }
-      #readouts .col-md-6:last-child {
-        margin-right: 0; /* No margin on the last card */
+      /* Readouts container styling */
+      #readouts.container {
+        height: auto; /* Allow readouts container to collapse its height */
+        padding-top: 0;
+        padding-bottom: 0;
       }
 
       #readouts .row {
         justify-content: center;
         margin-bottom: 0.75rem !important; /* Reduced space between readouts and map */
-        --bs-gutter-x: 0.75rem; /* Reduced horizontal gutter between cards */
+        --bs-gutter-x: 1.5rem; /* Increase horizontal gutter for more space between cards */
+      }
+
+      /* Adjust card widths for desktop */
+      #readouts .col-md-6 { 
+        /* Reverting to Bootstrap's column logic for better responsiveness */
+        /* col-lg-5 means 5/12 of the row width, allowing them to be wider */
+        flex: 0 0 auto;
+        width: 40%; /* Custom width to make them wider on large desktops */
+        max-width: 450px; /* Cap max width to prevent them from becoming too wide on ultra-wide screens */
       }
 
       #readouts .card {
-          padding: 0.5rem !important; /* Even smaller padding for desktop cards */
+          padding: 0.75rem !important; /* Back to slightly more padding for content */
       }
 
       #readouts h5 {
-          font-size: 0.95rem; /* Smaller heading in readouts */
-          margin-bottom: 0.3rem; /* Reduced margin */
+          font-size: 1rem; /* Slightly smaller heading in readouts */
+          margin-bottom: 0.5rem; /* Adjusted margin */
       }
 
       #readouts p {
-          font-size: 0.75rem; /* Smaller paragraph text in readouts */
-          margin-bottom: 0.2rem; /* Reduce space between text lines */
+          font-size: 0.85rem; /* Slightly larger paragraph text in readouts for readability */
+          margin-bottom: 0.3rem; /* Reduce space between text lines */
       }
 
       #readouts span[data-readout] {
-          font-size: 0.75rem; /* Smaller readout values */
+          font-size: 0.85rem; /* Match readout values to paragraph font size */
+      }
+
+      #elevationprofile {
+          min-height: 180px; /* Adjusted min-height for the chart, a bit more space */
       }
     }
 
-    /* Mobile (smaller than 992px) adjustments */
+    /* Mobile (smaller than 992px) adjustments - keep as is for responsiveness */
     @media (max-width: 991.98px) {
       body {
         overflow-y: auto; /* Re-enable scroll on mobile if content overflows */
@@ -318,7 +312,7 @@
             <h5 class="fw-bold text-center">📻 Receiving Location</h5>
             <div class="input-group mb-2">
               <span class="input-group-text">Lat,lng or address</span>
-              <input type="text" name="raddr" class="form-control text-end" placeholder="e.g., address or 1.2345,103.5678">
+              <input type="text" name="raddr" class="form-control text-end" placeholder="e.2345,103.5678">
               <button type="button" class="btn btn-outline-primary" name="rsearchgo">Find</button>
             </div>
             <div class="input-group">
@@ -333,8 +327,7 @@
 
     <div class="container mt-4 d-none" id="readouts">
       <div class="row g-3 align-items-stretch justify-content-center">
-        <div class="col-md-6">
-          <div class="card p-3 same-height">
+        <div class="col-md-6 col-lg-5"> <div class="card p-3 same-height">
             <h5 class="fw-bold">Distance and Bearing</h5>
             <p>
               Distance: <span data-readout="distance_mi"></span> mi, <span data-readout="distance_km"></span> km<br>
@@ -351,8 +344,7 @@
           </div>
         </div>
 
-        <div class="col-md-6">
-          <div class="card p-3 same-height">
+        <div class="col-md-6 col-lg-5"> <div class="card p-3 same-height">
             <h5 class="fw-bold">Elevation Profile</h5>
             <div id="elevationprofile"></div>
           </div>
