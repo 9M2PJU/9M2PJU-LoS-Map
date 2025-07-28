@@ -6,12 +6,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>9M2PJU Line-of-Sight Map</title>
 
-  <meta name="description" content="Estimate and visualize line-of-sight communication paths for UHF (70 cm) and VHF (2 m) amateur radio using real terrain data. Designed for ham radio operators in Malaysia and beyond.">
-  <meta name="keywords" content="line-of-sight calculator, vhf uhf map, ham radio tool, amateur radio Malaysia, repeater planning, elevation profile, terrain analysis, 9M2PJU, radio communication">
-  <meta name="author" content="9M2PJU">
+  <meta name="description" content="Estimate and visualize line-of-sight communication paths for UHF (70 cm) and VHF (2 m) amateur radio using real terrain data.">
+  <meta name="keywords" content="line of sight, communication, radio, elevation, path, VHF, UHF, line-of-sight calculator, vhf uhf map, ham radio tool, amateur radio, ham radio, Malaysia, repeater planning, elevation profile, terrain analysis, 9M2PJU, amateur radio communication">
   <meta name="robots" content="index, follow">
   <meta property="og:title" content="9M2PJU Line-of-Sight Map">
-  <meta property="og:description" content="A tool to estimate and visualize VHF/UHF radio line-of-sight paths using terrain data.">
+  <meta property="og:description" content="Estimate and visualize line-of-sight communication paths for UHF (70 cm) and VHF (2 m) amateur radio using real terrain data.">
   <meta property="og:url" content="https://los.hamradio.my">
   <meta name="twitter:card" content="summary_large_image">
 
@@ -24,6 +23,7 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
   <script src="https://code.highcharts.com/highcharts.js"></script>
+  <script src="https://code.highcharts.com/themes/dark-unica.js"></script>
 
   <script src="https://code.jquery.com/jquery-3.7.1.min.js" crossorigin="anonymous"></script>
 
@@ -31,24 +31,91 @@
   <script src="index.js"></script>
 
   <style>
+    :root {
+      --bg-color: #121212;
+      --text-color: #f0f0f0;
+      --card-bg: #1e1e1e;
+      --input-bg: #2c2c2c;
+      --input-text: #f0f0f0;
+      --accent-color: #0d6efd;
+    }
+
     body {
       font-family: 'Segoe UI', sans-serif;
-      background-color: #f9f9f9;
+      background-color: var(--bg-color);
+      color: var(--text-color);
     }
+
+    h1, h5, .fw-bold {
+      color: var(--accent-color);
+    }
+
+    a {
+      color: #66bfff;
+    }
+
+    a:hover {
+      color: #88ccff;
+    }
+
     #map {
       height: 60vh;
       margin-top: 1rem;
+      border-radius: 0.5rem;
+      border: 1px solid #333;
     }
+
     .card {
       border-radius: 1rem;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+      background-color: var(--card-bg);
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.4);
+      color: var(--text-color);
     }
+
     .input-group-text {
-      background-color: #f0f0f0;
+      background-color: var(--input-bg);
+      color: var(--text-color);
+      border: 1px solid #444;
     }
-    .fw-bold {
-      font-size: 1.1rem;
+
+    input.form-control, input.form-control:focus {
+      background-color: var(--input-bg);
+      color: var(--input-text);
+      border: 1px solid #555;
     }
+
+    button.btn-outline-primary {
+      color: var(--accent-color);
+      border-color: var(--accent-color);
+    }
+
+    button.btn-outline-primary:hover {
+      background-color: var(--accent-color);
+      color: #fff;
+    }
+
+    .accordion-button {
+      background-color: var(--card-bg);
+      color: var(--text-color);
+    }
+
+    .accordion-button:focus {
+      box-shadow: none;
+    }
+
+    .accordion-body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+    }
+
+    .text-muted {
+      color: #aaaaaa !important;
+    }
+
+    .shadow-sm {
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.6) !important;
+    }
+
     @media (max-width: 767px) {
       #map {
         height: 50vh;
@@ -61,7 +128,7 @@
   <main class="flex-grow-1 container py-4">
     <div class="text-center mb-4">
       <h1 class="fw-bold text-primary">9M2PJU Line-of-Sight Map</h1>
-      <p>This tool helps identify potential line-of-sight paths for UHF (70 cm) and VHF (2 m) amateur radio communications—bands where terrain and obstructions often have a greater impact than atmospheric conditions.</p>
+      <p>This tool helps identify potential line-of-sight paths for UHF (70 cm) and VHF (2 m) amateur radio communications bands where terrain and obstructions often have a greater impact than atmospheric conditions.</p>
       <p>Enter an address or coordinates for both locations. Drag the map markers to refine your positions and see terrain profiles.</p>
       <p class="text-muted small">Note: Results are terrain-based estimates. Real-world obstacles like buildings or trees may affect accuracy.</p>
     </div>
@@ -70,7 +137,7 @@
       <div class="accordion-item">
         <h2 class="accordion-header" id="headingOne">
           <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#instructions" aria-expanded="false">
-            How to get coordinates from RepeaterBook
+            📍 How to get coordinates from RepeaterBook
           </button>
         </h2>
         <div id="instructions" class="accordion-collapse collapse" data-bs-parent="#accordionHelp">
@@ -91,7 +158,7 @@
       <div class="row g-3">
         <div class="col-md-6">
           <div class="card p-3">
-            <h5 class="fw-bold text-center">Transmitting Location</h5>
+            <h5 class="fw-bold text-center">📡 Transmitting Location</h5>
             <div class="input-group mb-2">
               <span class="input-group-text">Lat,lng or address</span>
               <input type="text" name="xaddr" class="form-control text-end" placeholder="e.g., address or 1.2345,103.5678">
@@ -107,7 +174,7 @@
 
         <div class="col-md-6">
           <div class="card p-3">
-            <h5 class="fw-bold text-center">Receiving Location</h5>
+            <h5 class="fw-bold text-center">📻 Receiving Location</h5>
             <div class="input-group mb-2">
               <span class="input-group-text">Lat,lng or address</span>
               <input type="text" name="raddr" class="form-control text-end" placeholder="e.g., address or 1.2345,103.5678">
