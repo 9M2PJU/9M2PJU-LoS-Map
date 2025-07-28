@@ -44,6 +44,7 @@
       font-family: 'Segoe UI', sans-serif;
       background-color: var(--bg-color);
       color: var(--text-color);
+      /* Removed min-height: auto; as it can sometimes interfere with flex-grow-1 */
     }
 
     h1, h5, .fw-bold {
@@ -71,7 +72,7 @@
     }
 
     #map {
-      height: 60vh;
+      height: 70vh; /* Default height */
       margin-top: 1rem;
       border-radius: 0.5rem;
       border: 1px solid #333;
@@ -88,17 +89,20 @@
       background-color: var(--input-bg);
       color: var(--text-color);
       border: 1px solid #444;
+      font-size: 0.85rem; /* Re-added font-size */
     }
 
     input.form-control, input.form-control:focus {
       background-color: var(--input-bg);
       color: var(--input-text);
       border: 1px solid #555;
+      font-size: 0.9rem; /* Re-added font-size */
     }
 
     button.btn-outline-primary {
       color: var(--accent-color);
       border-color: var(--accent-color);
+      font-size: 0.9rem; /* Re-added font-size */
     }
 
     button.btn-outline-primary:hover {
@@ -109,6 +113,7 @@
     .accordion-button {
       background-color: var(--card-bg);
       color: var(--text-color);
+      font-size: 0.95rem; /* Re-added font-size */
     }
 
     .accordion-button:focus {
@@ -118,19 +123,81 @@
     .accordion-body {
       background-color: var(--bg-color);
       color: var(--text-color);
+      font-size: 0.85rem; /* Re-added font-size */
     }
 
     .text-muted {
       color: #aaaaaa !important;
+      font-size: 0.8rem; /* Re-added font-size */
     }
 
     .shadow-sm {
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.6) !important;
     }
 
+    p {
+        font-size: 0.9rem; /* Re-added font-size */
+    }
+
+    /* Mobile adjustments */
     @media (max-width: 767px) {
       #map {
         height: 50vh;
+      }
+      body {
+        font-size: 0.95rem; /* Re-added font-size */
+      }
+      .text-muted {
+        font-size: 0.85rem; /* Re-added font-size */
+      }
+    }
+
+    /* Desktop adjustments - prioritize map height if readouts are hidden */
+    @media (min-width: 992px) {
+      #map {
+        /* This rule ensures the map takes up more space on desktop.
+           It will apply even when #readouts is hidden by default.
+           We assume the total height of header, input cards, and footer
+           is around 20-25vh, so 75-80vh for the map is a good fit. */
+        height: 75vh; 
+      }
+      
+      /* Specific adjustment if #readouts is visible (uncommented by JS) */
+      #readouts:not(.d-none) + #map {
+        height: 50vh; /* Reduce map height when readouts are visible to make space */
+      }
+
+      /* Adjust card sizes when readouts are visible */
+      #readouts .col-md-6 {
+        flex: 0 0 auto;
+        width: 25%; /* Two cards take up 50% width */
+        max-width: 300px;
+      }
+
+      #readouts .row {
+        justify-content: center;
+        margin-bottom: 1rem;
+      }
+
+      #readouts .card {
+          padding: 0.75rem !important;
+      }
+
+      #readouts h5 {
+          font-size: 1rem;
+      }
+
+      #readouts p {
+          font-size: 0.8rem;
+          margin-bottom: 0.3rem;
+      }
+
+      #readouts span[data-readout] {
+          font-size: 0.8rem;
+      }
+
+      #elevationprofile {
+          min-height: 180px;
       }
     }
   </style>
@@ -204,7 +271,7 @@
 
     <div class="container mt-4 d-none" id="readouts">
       <div class="row g-3 align-items-stretch">
-      <div class="col-md-6">
+        <div class="col-md-6">
           <div class="card p-3 same-height">
             <h5 class="fw-bold">Distance and Bearing</h5>
             <p>
@@ -233,6 +300,105 @@
 
     <div id="map" class="rounded shadow-sm"></div>
   </main>
+
+  <script>
+    Highcharts.chart('elevationprofile', {
+      chart: {
+        type: 'area',
+        backgroundColor: 'transparent',
+        height: null,
+        zoomType: 'x',
+        panning: true,
+        panKey: 'shift'
+      },
+      title: {
+        text: null
+      },
+      credits: {
+        enabled: false
+      },
+      exporting: {
+        enabled: false
+      },
+      xAxis: {
+        title: {
+          text: 'Distance (km)',
+          style: {
+            color: '#f0f0f0',
+            fontSize: '0.8rem'
+          }
+        },
+        labels: {
+          style: {
+            color: '#f0f0f0',
+            fontSize: '0.75rem'
+          }
+        },
+        lineColor: '#555',
+        tickColor: '#555'
+      },
+      yAxis: {
+        title: {
+          text: 'Elevation (m)',
+          style: {
+            color: '#f0f0f0',
+            fontSize: '0.8rem'
+          }
+        },
+        labels: {
+          style: {
+            color: '#f0f0f0',
+            fontSize: '0.75rem'
+          }
+        },
+        gridLineColor: '#333',
+        lineColor: '#555',
+        tickColor: '#555'
+      },
+      tooltip: {
+        pointFormat: '<span style="color:{series.color}">\u25CF</span> {series.name}: <b>{point.y:.0f} m</b> at <b>{point.x:.2f} km</b><br/>',
+        backgroundColor: 'rgba(30, 30, 30, 0.85)',
+        borderColor: '#555',
+        style: {
+          color: '#f0f0f0',
+          fontSize: '0.85rem'
+        }
+      },
+      plotOptions: {
+        area: {
+          fillColor: {
+            linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+            stops: [
+              [0, Highcharts.getOptions().colors[0]],
+              [1, Highcharts.color(Highcharts.getOptions().colors[0]).setOpacity(0).get('rgba')]
+            ]
+          },
+          marker: {
+            enabled: false,
+            states: {
+              hover: {
+                enabled: true,
+                radius: 5
+              }
+            }
+          },
+          lineWidth: 2,
+          states: {
+            hover: {
+              lineWidth: 3
+            }
+          },
+          threshold: null
+        }
+      },
+      series: [{
+        name: 'Elevation',
+        data: [],
+        color: '#0d6efd',
+        lineColor: '#0d6efd'
+      }]
+    });
+  </script>
 </body>
 
 </html>
