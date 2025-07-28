@@ -44,7 +44,6 @@
       font-family: 'Segoe UI', sans-serif;
       background-color: var(--bg-color);
       color: var(--text-color);
-      /* Changed min-vh-100 to min-vh-auto to prevent forced scrolling on smaller desktop screens */
       min-height: auto; 
     }
 
@@ -73,7 +72,6 @@
     }
 
     #map {
-      /* Adjusted height for desktop view to prevent scrolling */
       height: 45vh; 
       margin-top: 1rem;
       border-radius: 0.5rem;
@@ -137,10 +135,9 @@
       }
     }
 
-    /* Media query for larger screens (desktop) to ensure map fits without scroll */
     @media (min-width: 992px) {
       #map {
-        height: 45vh; /* Further adjust height for larger screens if necessary */
+        height: 45vh; 
       }
     }
   </style>
@@ -243,6 +240,101 @@
 
     <div id="map" class="rounded shadow-sm"></div>
   </main>
+
+  <script>
+    // Highcharts configuration for the elevation profile
+    Highcharts.chart('elevationprofile', {
+      chart: {
+        type: 'area', // Area chart for elevation profiles
+        backgroundColor: 'transparent', // Blends with the dark theme
+        height: null, // Allows Highcharts to manage height dynamically
+        zoomType: 'x', // Enable zooming on the X-axis
+        panning: true, // Enable panning
+        panKey: 'shift' // Use Shift key for panning
+      },
+      title: {
+        text: null // No main title
+      },
+      credits: {
+        enabled: false // Remove Highcharts.com credit
+      },
+      exporting: {
+        enabled: false // Disable exporting features
+      },
+      xAxis: {
+        title: {
+          text: 'Distance (km)', // X-axis title
+          style: {
+            color: '#f0f0f0' // Match text color to the theme
+          }
+        },
+        labels: {
+          style: {
+            color: '#f0f0f0' // Match text color to the theme
+          }
+        },
+        lineColor: '#555', // Adjust axis line color for theme
+        tickColor: '#555' // Adjust tick color for theme
+      },
+      yAxis: {
+        title: {
+          text: 'Elevation (m)', // Y-axis title
+          style: {
+            color: '#f0f0f0' // Match text color to the theme
+          }
+        },
+        labels: {
+          style: {
+            color: '#f0f0f0' // Match text color to the theme
+          }
+        },
+        gridLineColor: '#333', // Darker grid lines for dark theme
+        lineColor: '#555', // Adjust axis line color for theme
+        tickColor: '#555' // Adjust tick color for theme
+      },
+      tooltip: {
+        pointFormat: '<span style="color:{series.color}">\u25CF</span> {series.name}: <b>{point.y:.0f} m</b> at <b>{point.x:.2f} km</b><br/>',
+        backgroundColor: 'rgba(30, 30, 30, 0.85)', // Card background with transparency
+        borderColor: '#555',
+        style: {
+          color: '#f0f0f0'
+        }
+      },
+      plotOptions: {
+        area: {
+          fillColor: {
+            linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+            stops: [
+              [0, Highcharts.getOptions().colors[0]], // Use default Highcharts color
+              [1, Highcharts.color(Highcharts.getOptions().colors[0]).setOpacity(0).get('rgba')] // Transparent at bottom
+            ]
+          },
+          marker: {
+            enabled: false, // No markers by default
+            states: {
+              hover: {
+                enabled: true,
+                radius: 5
+              }
+            }
+          },
+          lineWidth: 2,
+          states: {
+            hover: {
+              lineWidth: 3
+            }
+          },
+          threshold: null // Important for area charts to fill down to zero
+        }
+      },
+      series: [{
+        name: 'Elevation',
+        data: [], // This will be populated dynamically by your 'index.js'
+        color: '#0d6efd', // Use the accent color from your CSS
+        lineColor: '#0d6efd' // Ensure the line matches the fill color's primary hue
+      }]
+    });
+  </script>
 </body>
 
 </html>
