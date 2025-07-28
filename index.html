@@ -44,6 +44,8 @@
       font-family: 'Segoe UI', sans-serif;
       background-color: var(--bg-color);
       color: var(--text-color);
+      /* Changed min-vh-100 to min-vh-auto to prevent forced scrolling on smaller desktop screens */
+      min-height: auto; 
     }
 
     h1, h5, .fw-bold {
@@ -71,7 +73,8 @@
     }
 
     #map {
-      height: 60vh;
+      /* Adjusted height for desktop view to prevent scrolling */
+      height: 45vh; 
       margin-top: 1rem;
       border-radius: 0.5rem;
       border: 1px solid #333;
@@ -131,6 +134,13 @@
     @media (max-width: 767px) {
       #map {
         height: 50vh;
+      }
+    }
+
+    /* Media query for larger screens (desktop) to ensure map fits without scroll */
+    @media (min-width: 992px) {
+      #map {
+        height: 45vh; /* Further adjust height for larger screens if necessary */
       }
     }
   </style>
