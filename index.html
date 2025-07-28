@@ -92,7 +92,6 @@
 
     <div id="panel" class="container-fluid mt-2">
       <div class="row g-3 align-items-stretch">
-        <!-- Distance and Bearing Card -->
         <div class="col-md-6">
           <div class="card p-3 same-height">
             <div class="card-body">
@@ -104,7 +103,6 @@
           </div>
         </div>
 
-        <!-- Elevation Profile Card -->
         <div class="col-md-6">
           <div class="card p-3 same-height">
             <div class="card-body">
@@ -117,21 +115,16 @@
     </div>
   </main>
 
-  <!-- JS Libraries -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://code.highcharts.com/highcharts.js"></script>
-
-  <!-- Optional: Your map & chart JS here -->
   <script>
-    // Example Leaflet map setup
     const map = L.map('map').setView([3.139, 101.6869], 10);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap contributors'
     }).addTo(map);
 
-    // Example dummy Highcharts elevation profile
     Highcharts.chart('elevationprofile', {
       chart: {
         type: 'area',
