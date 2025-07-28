@@ -58,9 +58,10 @@
       color: #88ccff;
     }
     
-    #elevationprofile {
-    height: 250px;
-    max-height: 300px;
+    .same-height {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
     }
     
     #map {
@@ -197,8 +198,8 @@
 
     <div class="container mt-4 d-none" id="readouts">
       <div class="row g-3">
-        <div class="col-md-6">
-          <div class="card p-3">
+      <div class="col-md-6">
+          <div class="card p-3 same-height">
             <h5 class="fw-bold">Distance and Bearing</h5>
             <p>
               Distance: <span data-readout="distance_mi"></span> mi, <span data-readout="distance_km"></span> km<br>
@@ -216,7 +217,7 @@
         </div>
 
         <div class="col-md-6">
-          <div class="card p-3">
+          <div class="card p-3 same-height">
             <h5 class="fw-bold">Elevation Profile</h5>
             <div id="elevationprofile"></div>
           </div>
