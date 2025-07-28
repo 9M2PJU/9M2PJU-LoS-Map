@@ -45,9 +45,16 @@
       background-color: var(--bg-color);
       color: var(--text-color);
       min-height: auto; 
+      font-size: 0.9rem;
     }
 
-    h1, h5, .fw-bold {
+    h1 {
+      font-size: 2.2rem;
+      color: var(--accent-color);
+    }
+
+    h5, .fw-bold {
+      font-size: 1.1rem;
       color: var(--accent-color);
     }
 
@@ -72,7 +79,7 @@
     }
 
     #map {
-      height: 45vh; 
+      height: 70vh;
       margin-top: 1rem;
       border-radius: 0.5rem;
       border: 1px solid #333;
@@ -89,17 +96,20 @@
       background-color: var(--input-bg);
       color: var(--text-color);
       border: 1px solid #444;
+      font-size: 0.85rem;
     }
 
     input.form-control, input.form-control:focus {
       background-color: var(--input-bg);
       color: var(--input-text);
       border: 1px solid #555;
+      font-size: 0.9rem;
     }
 
     button.btn-outline-primary {
       color: var(--accent-color);
       border-color: var(--accent-color);
+      font-size: 0.9rem;
     }
 
     button.btn-outline-primary:hover {
@@ -110,6 +120,7 @@
     .accordion-button {
       background-color: var(--card-bg);
       color: var(--text-color);
+      font-size: 0.95rem;
     }
 
     .accordion-button:focus {
@@ -119,25 +130,37 @@
     .accordion-body {
       background-color: var(--bg-color);
       color: var(--text-color);
+      font-size: 0.85rem;
     }
 
     .text-muted {
       color: #aaaaaa !important;
+      font-size: 0.8rem;
     }
 
     .shadow-sm {
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.6) !important;
     }
 
+    p {
+        font-size: 0.9rem;
+    }
+
     @media (max-width: 767px) {
       #map {
         height: 50vh;
+      }
+      body {
+        font-size: 0.95rem;
+      }
+      .text-muted {
+        font-size: 0.85rem;
       }
     }
 
     @media (min-width: 992px) {
       #map {
-        height: 45vh; 
+        height: 75vh;
       }
     }
   </style>
@@ -242,62 +265,66 @@
   </main>
 
   <script>
-    // Highcharts configuration for the elevation profile
     Highcharts.chart('elevationprofile', {
       chart: {
-        type: 'area', // Area chart for elevation profiles
-        backgroundColor: 'transparent', // Blends with the dark theme
-        height: null, // Allows Highcharts to manage height dynamically
-        zoomType: 'x', // Enable zooming on the X-axis
-        panning: true, // Enable panning
-        panKey: 'shift' // Use Shift key for panning
+        type: 'area',
+        backgroundColor: 'transparent',
+        height: null,
+        zoomType: 'x',
+        panning: true,
+        panKey: 'shift'
       },
       title: {
-        text: null // No main title
+        text: null
       },
       credits: {
-        enabled: false // Remove Highcharts.com credit
+        enabled: false
       },
       exporting: {
-        enabled: false // Disable exporting features
+        enabled: false
       },
       xAxis: {
         title: {
-          text: 'Distance (km)', // X-axis title
+          text: 'Distance (km)',
           style: {
-            color: '#f0f0f0' // Match text color to the theme
+            color: '#f0f0f0',
+            fontSize: '0.8rem'
           }
         },
         labels: {
           style: {
-            color: '#f0f0f0' // Match text color to the theme
+            color: '#f0f0f0',
+            fontSize: '0.75rem'
           }
         },
-        lineColor: '#555', // Adjust axis line color for theme
-        tickColor: '#555' // Adjust tick color for theme
+        lineColor: '#555',
+        tickColor: '#555'
       },
       yAxis: {
         title: {
-          text: 'Elevation (m)', // Y-axis title
+          text: 'Elevation (m)',
           style: {
-            color: '#f0f0f0' // Match text color to the theme
+            color: '#f0f0f0',
+            fontSize: '0.8rem'
           }
         },
         labels: {
           style: {
-            color: '#f0f0f0' // Match text color to the theme
+            color: '#f0f0f0',
+            fontSize: '0.75rem'
           }
         },
-        gridLineColor: '#333', // Darker grid lines for dark theme
-        lineColor: '#555', // Adjust axis line color for theme
-        tickColor: '#555' // Adjust tick color for theme
+        gridLineColor: '#333',
+        lineColor: '#555',
+        tickColor: '#555'
       },
       tooltip: {
         pointFormat: '<span style="color:{series.color}">\u25CF</span> {series.name}: <b>{point.y:.0f} m</b> at <b>{point.x:.2f} km</b><br/>',
-        backgroundColor: 'rgba(30, 30, 30, 0.85)', // Card background with transparency
+        backgroundColor: 'rgba(30, 30, 30, 0.85)',
         borderColor: '#555',
         style: {
-          color: '#f0f0f0'
+          color: '#f0f0f0',
+          fontSize: '0.85rem'
         }
       },
       plotOptions: {
@@ -305,12 +332,12 @@
           fillColor: {
             linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
             stops: [
-              [0, Highcharts.getOptions().colors[0]], // Use default Highcharts color
-              [1, Highcharts.color(Highcharts.getOptions().colors[0]).setOpacity(0).get('rgba')] // Transparent at bottom
+              [0, Highcharts.getOptions().colors[0]],
+              [1, Highcharts.color(Highcharts.getOptions().colors[0]).setOpacity(0).get('rgba')]
             ]
           },
           marker: {
-            enabled: false, // No markers by default
+            enabled: false,
             states: {
               hover: {
                 enabled: true,
@@ -324,14 +351,14 @@
               lineWidth: 3
             }
           },
-          threshold: null // Important for area charts to fill down to zero
+          threshold: null
         }
       },
       series: [{
         name: 'Elevation',
-        data: [], // This will be populated dynamically by your 'index.js'
-        color: '#0d6efd', // Use the accent color from your CSS
-        lineColor: '#0d6efd' // Ensure the line matches the fill color's primary hue
+        data: [],
+        color: '#0d6efd',
+        lineColor: '#0d6efd'
       }]
     });
   </script>
