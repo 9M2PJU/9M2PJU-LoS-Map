@@ -6,329 +6,99 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>9M2PJU Line-of-Sight Map</title>
 
-  <meta name="description" content="Estimate and visualize line-of-sight communication paths for UHF (70 cm) and VHF (2 m) amateur radio using real terrain data.">
-  <meta name="keywords" content="line of sight, communication, radio, elevation, path, VHF, UHF, line-of-sight calculator, vhf uhf map, ham radio tool, amateur radio, ham radio, Malaysia, repeater planning, elevation profile, terrain analysis, 9M2PJU, amateur radio communication">
+  <meta name="description"
+    content="Estimate and visualize line-of-sight communication paths for UHF (70 cm) and VHF (2 m) amateur radio using real terrain data.">
+  <meta name="keywords"
+    content="line of sight, communication, radio, elevation, path, VHF, UHF, line-of-sight calculator, vhf uhf map, ham radio tool, amateur radio, ham radio, Malaysia, repeater planning, elevation profile, terrain analysis, 9M2PJU, amateur radio communication">
   <meta name="robots" content="index, follow">
   <meta property="og:title" content="9M2PJU Line-of-Sight Map">
-  <meta property="og:description" content="Estimate and visualize line-of-sight communication paths for UHF (70 cm) and VHF (2 m) amateur radio using real terrain data.">
+  <meta property="og:description"
+    content="Estimate and visualize line-of-sight communication paths for UHF (70 cm) and VHF (2 m) amateur radio using real terrain data.">
   <meta property="og:url" content="https://los.hamradio.my">
   <meta name="twitter:card" content="summary_large_image">
+  <meta name="theme-color" content="#0f0c29">
 
   <link rel="shortcut icon" href="favicon.png" type="image/x-icon" />
+  <link rel="apple-touch-icon" href="favicon.png">
+  <link rel="manifest" href="manifest.json">
 
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap"
+    rel="stylesheet">
+
+  <!-- Leaflet Map -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 
+  <!-- Bootstrap 5 -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
+  <!-- Highcharts for elevation profile -->
   <script src="https://code.highcharts.com/highcharts.js"></script>
-  <script src="https://code.highcharts.com/themes/dark-unica.js"></script>
 
+  <!-- jQuery -->
   <script src="https://code.jquery.com/jquery-3.7.1.min.js" crossorigin="anonymous"></script>
 
+  <!-- Custom Styles -->
   <link rel="stylesheet" href="index.css">
   <script src="index.js"></script>
-
-  <style>
-    :root {
-      --bg-color: #121212;
-      --text-color: #f0f0f0;
-      --card-bg: #1e1e1e;
-      --input-bg: #2c2c2c;
-      --input-text: #f0f0f0;
-      --accent-color: #0d6efd;
-    }
-
-    html,
-    body {
-      height: 100%;
-      /* Essential for viewport height calculations */
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-      /* Prevent body scrollbar by default on desktop */
-      font-family: 'Segoe UI', sans-serif;
-      background-color: var(--bg-color);
-      color: var(--text-color);
-    }
-
-    main {
-      display: flex;
-      flex-direction: column;
-      height: 100%;
-      /* Make main fill the body height */
-      padding-top: 1rem !important;
-      /* Minimal top padding */
-      padding-bottom: 1rem !important;
-      /* Minimal bottom padding */
-      box-sizing: border-box;
-      /* Include padding in height calculation */
-    }
-
-    /* Set fixed sizes/shrink behavior for elements above the map */
-    .text-center.mb-4,
-    .accordion.mb-3,
-    form#searchform {
-      flex-shrink: 0;
-      /* Prevent these sections from shrinking */
-    }
-
-    .text-center.mb-4 {
-      margin-bottom: 0.75rem !important;
-      /* Reduced margin */
-    }
-
-    .accordion.mb-3 {
-      margin-bottom: 0.75rem !important;
-      /* Reduced margin */
-    }
-
-    h1 {
-      font-size: 2.2rem;
-      color: var(--accent-color);
-      margin-bottom: 0.5rem;
-    }
-
-    h5,
-    .fw-bold {
-      font-size: 1.1rem;
-      color: var(--accent-color);
-    }
-
-    a {
-      color: #66bfff;
-    }
-
-    a:hover {
-      color: #88ccff;
-    }
-
-    .same-height {
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-    }
-
-    #elevationprofile {
-      flex: 1;
-      width: 100%;
-      min-height: 120px;
-      /* Reduced min-height for chart */
-    }
-
-    #map {
-      flex-grow: 1;
-      /* Map will grow to fill remaining space */
-      margin-top: 0.75rem;
-      /* Reduced margin */
-      border-radius: 0.5rem;
-      border: 1px solid #333;
-      min-height: 300px;
-      /* Ensure a reasonable minimum height for the map */
-    }
-
-    .card {
-      border-radius: 1rem;
-      background-color: var(--card-bg);
-      box-shadow: 0 0 15px rgba(0, 0, 0, 0.4);
-      color: var(--text-color);
-      padding: 0.75rem !important;
-      /* Reduced default card padding */
-    }
-
-    .input-group-text {
-      background-color: var(--input-bg);
-      color: var(--text-color);
-      border: 1px solid #444;
-      font-size: 0.85rem;
-    }
-
-    input.form-control,
-    input.form-control:focus {
-      background-color: var(--input-bg);
-      color: var(--input-text);
-      border: 1px solid #555;
-      font-size: 0.9rem;
-    }
-
-    button.btn-outline-primary {
-      color: var(--accent-color);
-      border-color: var(--accent-color);
-      font-size: 0.9rem;
-    }
-
-    button.btn-outline-primary:hover {
-      background-color: var(--accent-color);
-      color: #fff;
-    }
-
-    .accordion-button {
-      background-color: var(--card-bg);
-      color: var(--text-color);
-      font-size: 0.95rem;
-      padding: 0.75rem 1.25rem;
-      /* Reduced accordion button padding */
-    }
-
-    .accordion-button:focus {
-      box-shadow: none;
-    }
-
-    .accordion-body {
-      background-color: var(--bg-color);
-      color: var(--text-color);
-      font-size: 0.85rem;
-      padding: 0.75rem 1.25rem;
-      /* Reduced accordion body padding */
-    }
-
-    .text-muted {
-      color: #aaaaaa !important;
-      font-size: 0.8rem;
-    }
-
-    .shadow-sm {
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.6) !important;
-    }
-
-    p {
-      font-size: 0.85rem;
-      margin-bottom: 0.4rem;
-    }
-
-    form#searchform .row.g-3 {
-      --bs-gutter-y: 0.75rem;
-    }
-
-    /* Readouts container specific styling */
-    #readouts {
-      flex-shrink: 0;
-      /* Prevent readout cards section from shrinking */
-      margin-top: 0.75rem !important;
-      /* Reduced top margin */
-      margin-bottom: 0.75rem !important;
-      /* Reduced bottom margin */
-      /* No .container here, letting it stretch with Bootstrap's grid */
-      padding-top: 0;
-      padding-bottom: 0;
-    }
-
-    #readouts .row {
-      --bs-gutter-x: 1.5rem;
-      /* Standard Bootstrap gutter for spacing between cards */
-      justify-content: center;
-      /* Center the cards */
-    }
-
-    /* Keep .col-md-6 for consistency with input cards */
-    #readouts .col-md-6 {
-      /* Remove max-width to allow them to scale like input cards */
-      max-width: unset; 
-    }
-
-    #readouts .card {
-      padding: 0.75rem !important;
-      /* Keep a decent padding for readability */
-    }
-
-    #readouts h5 {
-      font-size: 1rem;
-      margin-bottom: 0.5rem;
-    }
-
-    #readouts p {
-      font-size: 0.85rem;
-      margin-bottom: 0.3rem;
-    }
-
-    #readouts span[data-readout] {
-      font-size: 0.85rem;
-    }
-
-    /* Mobile (smaller than 992px) adjustments */
-    @media (max-width: 991.98px) {
-      html,
-      body {
-        overflow-y: auto;
-        /* Re-enable scroll on mobile if content overflows */
-      }
-
-      main {
-        height: auto;
-        /* Allow main to expand on mobile */
-        padding-top: 1rem !important;
-        padding-bottom: 1rem !important;
-      }
-
-      #map {
-        height: 50vh;
-        /* Fixed height for map on mobile */
-        min-height: unset;
-        /* Remove min-height override for mobile */
-      }
-
-      .text-muted {
-        font-size: 0.85rem;
-      }
-
-      /* Ensure cards stack on small screens */
-      #readouts .col-md-6 {
-        width: 100%;
-        /* Full width on mobile */
-        margin-bottom: 0.75rem;
-        /* Space between stacked cards */
-        max-width: unset;
-        /* Remove max-width for mobile */
-      }
-
-      #readouts .row {
-        flex-wrap: wrap;
-        /* Allow wrapping on small screens */
-        justify-content: flex-start;
-      }
-    }
-  </style>
 </head>
 
-<body class="d-flex flex-column min-vh-100">
-  <main class="flex-grow-1 container">
-    <div class="text-center mb-4">
-      <h1 class="fw-bold text-primary">9M2PJU Line-of-Sight Map</h1>
-      <p>This tool helps identify potential line-of-sight paths for UHF (70 cm) and VHF (2 m) amateur radio communications bands where terrain and obstructions often have a greater impact than atmospheric conditions.</p>
-      <p>Enter an address or coordinates for both locations. Drag the map markers to refine your positions and see terrain profiles.</p>
-      <p class="text-muted small">Note: Results are terrain-based estimates. Real-world obstacles like buildings or trees may affect accuracy.</p>
-    </div>
+<body>
+  <main class="container">
+    <!-- Header Section -->
+    <header class="text-center mb-4">
+      <h1 class="fw-bold mb-3">📡 9M2PJU Line-of-Sight Map</h1>
+      <p>This tool helps identify potential line-of-sight paths for <strong>UHF (70 cm)</strong> and <strong>VHF (2
+          m)</strong> amateur radio communications bands where terrain and obstructions often have a greater impact than
+        atmospheric conditions.</p>
+      <p>Enter an address or coordinates for both locations. Drag the map markers to refine your positions and see
+        terrain profiles.</p>
+      <p class="text-muted small">⚠️ Results are terrain-based estimates. Real-world obstacles like buildings or trees
+        may affect accuracy.</p>
+    </header>
 
+    <!-- Instructions Accordion -->
     <div class="accordion mb-3" id="accordionHelp">
       <div class="accordion-item">
         <h2 class="accordion-header" id="headingOne">
-          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#instructions" aria-expanded="false">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+            data-bs-target="#instructions" aria-expanded="false">
             📍 How to get coordinates from RepeaterBook
           </button>
         </h2>
         <div id="instructions" class="accordion-collapse collapse" data-bs-parent="#accordionHelp">
           <div class="accordion-body">
             <ol>
-              <li>Go to a repeater page on RepeaterBook (e.g., <a href="https://www.repeaterbook.com/repeaters/details.php?state_id=41&ID=365" target="_blank">example</a>).</li>
+              <li>Go to a repeater page on RepeaterBook (e.g., <a
+                  href="https://www.repeaterbook.com/repeaters/details.php?state_id=41&ID=365"
+                  target="_blank">example</a>).</li>
               <li>Open Developer Console with <code>F12</code>, switch to the Console tab.</li>
               <li>Paste this code: <code>mymap.getCenter().lat + ',' + mymap.getCenter().lng</code></li>
               <li>If prompted, type <code>allow pasting</code> to proceed.</li>
-              <li>Copy the output (e.g., <code>44.9491733350656,-122.9332083463669</code>) and paste it into the form below (without quote marks).</li>
+              <li>Copy the output (e.g., <code>44.9491733350656,-122.9332083463669</code>) and paste it into the form
+                below (without quote marks).</li>
             </ol>
           </div>
         </div>
       </div>
     </div>
 
+    <!-- Location Input Form -->
     <form id="searchform" onsubmit="return false;">
       <div class="row g-3">
+        <!-- Transmitting Location Card -->
         <div class="col-md-6">
-          <div class="card p-3">
-            <h5 class="fw-bold text-center">📡 Transmitting Location</h5>
+          <div class="card">
+            <h5 class="fw-bold text-center mb-3">📡 Transmitting Location</h5>
             <div class="input-group mb-2">
               <span class="input-group-text">Lat,lng or address</span>
-              <input type="text" name="xaddr" class="form-control text-end" placeholder="e.g., address or 1.2345,103.5678">
+              <input type="text" name="xaddr" class="form-control text-end"
+                placeholder="e.g., address or 1.2345,103.5678">
               <button type="button" class="btn btn-outline-primary" name="xsearchgo">Find</button>
             </div>
             <div class="input-group">
@@ -339,12 +109,14 @@
           </div>
         </div>
 
+        <!-- Receiving Location Card -->
         <div class="col-md-6">
-          <div class="card p-3">
-            <h5 class="fw-bold text-center">📻 Receiving Location</h5>
+          <div class="card">
+            <h5 class="fw-bold text-center mb-3">📻 Receiving Location</h5>
             <div class="input-group mb-2">
               <span class="input-group-text">Lat,lng or address</span>
-              <input type="text" name="raddr" class="form-control text-end" placeholder="e.g., address or 1.2345,103.5678">
+              <input type="text" name="raddr" class="form-control text-end"
+                placeholder="e.g., address or 1.2345,103.5678">
               <button type="button" class="btn btn-outline-primary" name="rsearchgo">Find</button>
             </div>
             <div class="input-group">
@@ -357,28 +129,33 @@
       </div>
     </form>
 
-    <div class="mt-4 d-none" id="readouts">
+    <!-- Results Readouts -->
+    <div class="d-none" id="readouts">
       <div class="row g-3 align-items-stretch justify-content-center">
+        <!-- Distance & Bearing Card -->
         <div class="col-md-6">
-          <div class="card p-3 same-height">
-            <h5 class="fw-bold">Distance and Bearing</h5>
+          <div class="card same-height">
+            <h5 class="fw-bold">Distance & Bearing</h5>
             <p>
               Distance: <span data-readout="distance_mi"></span> mi, <span data-readout="distance_km"></span> km<br>
               Horizon: <span data-readout="horizon_mi"></span> mi, <span data-readout="horizon_km"></span> km
-              <span class="text-danger d-none fw-bold" id="insufficienthorizon">
-                <br>Distance exceeds horizon. Contact unlikely.
+              <span class="d-none fw-bold" id="insufficienthorizon">
+                <br>⚠️ Distance exceeds horizon. Contact unlikely.
               </span>
             </p>
             <p>
-              Elevation (Tx): <span data-readout="transmit_elevation_ft"></span> ft, <span data-readout="transmit_elevation_m"></span> m<br>
-              Elevation (Rx): <span data-readout="receive_elevation_ft"></span> ft, <span data-readout="receive_elevation_m"></span> m
+              Elevation (Tx): <span data-readout="transmit_elevation_ft"></span> ft, <span
+                data-readout="transmit_elevation_m"></span> m<br>
+              Elevation (Rx): <span data-readout="receive_elevation_ft"></span> ft, <span
+                data-readout="receive_elevation_m"></span> m
             </p>
             <p>Bearing: <span data-readout="bearing_deg"></span>&deg;, <span data-readout="bearing_txt"></span></p>
           </div>
         </div>
 
+        <!-- Elevation Profile Card -->
         <div class="col-md-6">
-          <div class="card p-3 same-height">
+          <div class="card same-height">
             <h5 class="fw-bold">Elevation Profile</h5>
             <div id="elevationprofile"></div>
           </div>
@@ -386,14 +163,100 @@
       </div>
     </div>
 
-    <div id="map" class="rounded shadow-sm"></div>
+    <!-- Map Container -->
+    <div id="map"></div>
   </main>
 
+  <!-- Footer -->
+  <footer>
+    <p>Redesign by <a href="https://hamradio.my" target="_blank" rel="noopener noreferrer">9M2PJU</a> 🇲🇾</p>
+  </footer>
+
+  <!-- Highcharts Dark Theme Configuration -->
   <script>
+    // Custom dark theme for Highcharts
+    Highcharts.setOptions({
+      chart: {
+        backgroundColor: 'transparent',
+        style: {
+          fontFamily: 'Inter, sans-serif'
+        }
+      },
+      title: {
+        style: {
+          color: '#ffffff'
+        }
+      },
+      legend: {
+        itemStyle: {
+          color: '#ffffff'
+        }
+      },
+      xAxis: {
+        labels: {
+          style: {
+            color: 'rgba(255, 255, 255, 0.7)'
+          }
+        },
+        lineColor: 'rgba(255, 255, 255, 0.1)',
+        tickColor: 'rgba(255, 255, 255, 0.1)'
+      },
+      yAxis: {
+        labels: {
+          style: {
+            color: 'rgba(255, 255, 255, 0.7)'
+          }
+        },
+        gridLineColor: 'rgba(255, 255, 255, 0.05)',
+        lineColor: 'rgba(255, 255, 255, 0.1)',
+        tickColor: 'rgba(255, 255, 255, 0.1)'
+      },
+      tooltip: {
+        backgroundColor: 'rgba(15, 12, 41, 0.95)',
+        borderColor: 'rgba(0, 212, 255, 0.3)',
+        style: {
+          color: '#ffffff'
+        }
+      },
+      plotOptions: {
+        series: {
+          animation: {
+            duration: 800
+          }
+        },
+        area: {
+          fillColor: {
+            linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+            stops: [
+              [0, 'rgba(0, 212, 255, 0.4)'],
+              [1, 'rgba(123, 44, 191, 0.1)']
+            ]
+          },
+          lineColor: '#00d4ff',
+          lineWidth: 2,
+          marker: {
+            enabled: false,
+            states: {
+              hover: {
+                enabled: true,
+                fillColor: '#00d4ff',
+                lineColor: '#ffffff',
+                lineWidth: 2,
+                radius: 5
+              }
+            }
+          }
+        }
+      },
+      credits: {
+        enabled: false
+      }
+    });
+
+    // Initialize elevation profile chart
     Highcharts.chart('elevationprofile', {
       chart: {
         type: 'area',
-        backgroundColor: 'transparent',
         height: null,
         zoomType: 'x',
         panning: true,
@@ -402,9 +265,6 @@
       title: {
         text: null
       },
-      credits: {
-        enabled: false
-      },
       exporting: {
         enabled: false
       },
@@ -412,85 +272,47 @@
         title: {
           text: 'Distance (km)',
           style: {
-            color: '#f0f0f0',
             fontSize: '0.8rem'
           }
         },
         labels: {
           style: {
-            color: '#f0f0f0',
             fontSize: '0.75rem'
           }
-        },
-        lineColor: '#555',
-        tickColor: '#555'
+        }
       },
       yAxis: {
         title: {
           text: 'Elevation (m)',
           style: {
-            color: '#f0f0f0',
             fontSize: '0.8rem'
           }
         },
         labels: {
           style: {
-            color: '#f0f0f0',
             fontSize: '0.75rem'
           }
-        },
-        gridLineColor: '#333',
-        lineColor: '#555',
-        tickColor: '#555'
+        }
       },
       tooltip: {
-        pointFormat: '<span style="color:{series.color}">\u25CF</span> {series.name}: <b>{point.y:.0f} m</b> at <b>{point.x:.2f} km</b><br/>',
-        backgroundColor: 'rgba(30, 30, 30, 0.85)',
-        borderColor: '#555',
-        style: {
-          color: '#f0f0f0',
-          fontSize: '0.85rem'
-        }
-      },
-      plotOptions: {
-        area: {
-          fillColor: {
-            linearGradient: {
-              x1: 0,
-              y1: 0,
-              x2: 0,
-              y2: 1
-            },
-            stops: [
-              [0, Highcharts.getOptions().colors[0]],
-              [1, Highcharts.color(Highcharts.getOptions().colors[0]).setOpacity(0).get('rgba')]
-            ]
-          },
-          marker: {
-            enabled: false,
-            states: {
-              hover: {
-                enabled: true,
-                radius: 5
-              }
-            }
-          },
-          lineWidth: 2,
-          states: {
-            hover: {
-              lineWidth: 3
-            }
-          },
-          threshold: null
-        }
+        pointFormat: '<span style="color:{series.color}">\u25CF</span> {series.name}: <b>{point.y:.0f} m</b> at <b>{point.x:.2f} km</b><br/>'
       },
       series: [{
         name: 'Elevation',
-        data: [],
-        color: '#0d6efd',
-        lineColor: '#0d6efd'
+        data: []
       }]
     });
+  </script>
+
+  <!-- Service Worker Registration -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then(reg => console.log('Service Worker registered:', reg.scope))
+          .catch(err => console.log('Service Worker registration failed:', err));
+      });
+    }
   </script>
 </body>
 

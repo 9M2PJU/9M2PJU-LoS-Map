@@ -1,0 +1,21 @@
+{
+  "name": "9M2PJU Line-of-Sight Map",
+  "short_name": "LoS Map",
+  "description": "Estimate and visualize line-of-sight communication paths for UHF and VHF amateur radio using real terrain data.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f0c29",
+  "theme_color": "#0f0c29",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "favicon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["utilities", "navigation"],
+  "lang": "en",
+  "scope": "/"
+}

@@ -1,22 +1,575 @@
+/* ============================================
+   9M2PJU Line-of-Sight Map - Modern Theme
+   ============================================ */
+
+/* Google Fonts are loaded in HTML */
+
+/* ============================================
+   CSS Custom Properties (Design Tokens)
+   ============================================ */
+:root {
+  /* Color Palette */
+  --bg-gradient-1: #0f0c29;
+  --bg-gradient-2: #302b63;
+  --bg-gradient-3: #24243e;
+  
+  --glass-bg: rgba(255, 255, 255, 0.05);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-shadow: rgba(0, 0, 0, 0.3);
+  
+  --text-primary: #ffffff;
+  --text-secondary: rgba(255, 255, 255, 0.7);
+  --text-muted: rgba(255, 255, 255, 0.5);
+  
+  --accent-primary: #00d4ff;
+  --accent-secondary: #7b2cbf;
+  --accent-gradient: linear-gradient(135deg, #00d4ff 0%, #7b2cbf 100%);
+  
+  --success: #00ff88;
+  --warning: #ffaa00;
+  --danger: #ff4466;
+  
+  /* Spacing */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: 3rem;
+  
+  /* Border Radius */
+  --radius-sm: 0.5rem;
+  --radius-md: 1rem;
+  --radius-lg: 1.5rem;
+  --radius-full: 9999px;
+  
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-normal: 300ms ease;
+  --transition-slow: 500ms ease;
+  
+  /* Shadows */
+  --shadow-glow: 0 0 20px rgba(0, 212, 255, 0.3);
+  --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.3);
+  
+  /* Typography */
+  --font-heading: 'Outfit', sans-serif;
+  --font-body: 'Inter', sans-serif;
+}
+
+/* ============================================
+   Base Styles
+   ============================================ */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
 html, body {
-    height: 100%;
-    margin: 0;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  font-family: var(--font-body);
+  color: var(--text-primary);
+  line-height: 1.6;
 }
 
-.text-small {
-    font-size: 0.8rem;
+body {
+  background: linear-gradient(135deg, var(--bg-gradient-1) 0%, var(--bg-gradient-2) 50%, var(--bg-gradient-3) 100%);
+  background-attachment: fixed;
+  min-height: 100vh;
+  position: relative;
 }
 
+/* Animated Background Orbs */
+body::before,
+body::after {
+  content: '';
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.4;
+  z-index: -1;
+  animation: float 20s ease-in-out infinite;
+}
+
+body::before {
+  width: 400px;
+  height: 400px;
+  background: var(--accent-primary);
+  top: -100px;
+  right: -100px;
+}
+
+body::after {
+  width: 500px;
+  height: 500px;
+  background: var(--accent-secondary);
+  bottom: -150px;
+  left: -150px;
+  animation-delay: -10s;
+}
+
+@keyframes float {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  25% { transform: translate(30px, -30px) scale(1.05); }
+  50% { transform: translate(-20px, 20px) scale(0.95); }
+  75% { transform: translate(-30px, -20px) scale(1.02); }
+}
+
+/* ============================================
+   Typography
+   ============================================ */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  margin: 0;
+  line-height: 1.2;
+}
+
+h1 {
+  font-size: clamp(1.75rem, 5vw, 2.5rem);
+  background: var(--accent-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 0 0 40px rgba(0, 212, 255, 0.3);
+}
+
+h5 {
+  font-size: clamp(0.95rem, 2.5vw, 1.1rem);
+  color: var(--text-primary);
+}
+
+p {
+  margin: 0 0 var(--space-sm);
+  font-size: clamp(0.85rem, 2vw, 0.95rem);
+  color: var(--text-secondary);
+}
+
+a {
+  color: var(--accent-primary);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+a:hover {
+  color: var(--text-primary);
+  text-shadow: 0 0 10px var(--accent-primary);
+}
+
+.text-small, .text-muted {
+  font-size: 0.8rem;
+  color: var(--text-muted) !important;
+}
+
+/* ============================================
+   Glassmorphism Cards
+   ============================================ */
+.card, .glass-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  padding: var(--space-lg);
+  transition: all var(--transition-normal);
+}
+
+.card:hover, .glass-card:hover {
+  border-color: rgba(0, 212, 255, 0.3);
+  box-shadow: var(--shadow-card), var(--shadow-glow);
+  transform: translateY(-2px);
+}
+
+/* ============================================
+   Form Controls
+   ============================================ */
+.input-group {
+  position: relative;
+}
+
+.input-group-text {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--glass-border);
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  padding: var(--space-sm) var(--space-md);
+  transition: all var(--transition-fast);
+}
+
+input.form-control,
+input.form-control:focus {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--glass-border);
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  padding: var(--space-sm) var(--space-md);
+  transition: all var(--transition-fast);
+}
+
+input.form-control:focus {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.15);
+  outline: none;
+}
+
+input.form-control::placeholder {
+  color: var(--text-muted);
+}
+
+/* ============================================
+   Buttons
+   ============================================ */
+.btn {
+  font-family: var(--font-body);
+  font-weight: 600;
+  padding: var(--space-sm) var(--space-lg);
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+  cursor: pointer;
+  min-height: 44px; /* Touch-friendly */
+}
+
+.btn-outline-primary {
+  background: transparent;
+  border: 2px solid var(--accent-primary);
+  color: var(--accent-primary);
+}
+
+.btn-outline-primary:hover {
+  background: var(--accent-primary);
+  color: var(--bg-gradient-1);
+  box-shadow: var(--shadow-glow);
+  transform: translateY(-1px);
+}
+
+.btn-outline-primary:active {
+  transform: translateY(0);
+}
+
+/* ============================================
+   Accordion
+   ============================================ */
+.accordion-item {
+  background: transparent;
+  border: none;
+}
+
+.accordion-button {
+  background: var(--glass-bg);
+  backdrop-filter: blur(10px);
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  padding: var(--space-md) var(--space-lg);
+  border-radius: var(--radius-sm) !important;
+  border: 1px solid var(--glass-border);
+  transition: all var(--transition-fast);
+}
+
+.accordion-button:not(.collapsed) {
+  background: rgba(0, 212, 255, 0.1);
+  border-color: rgba(0, 212, 255, 0.3);
+  color: var(--text-primary);
+  box-shadow: none;
+}
+
+.accordion-button:focus {
+  box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.15);
+}
+
+.accordion-button::after {
+  filter: invert(1);
+}
+
+.accordion-body {
+  background: rgba(0, 0, 0, 0.2);
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  padding: var(--space-md) var(--space-lg);
+  border: 1px solid var(--glass-border);
+  border-top: none;
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+}
+
+.accordion-body ol {
+  padding-left: var(--space-lg);
+  margin: 0;
+}
+
+.accordion-body li {
+  margin-bottom: var(--space-sm);
+}
+
+.accordion-body code {
+  background: rgba(0, 212, 255, 0.1);
+  color: var(--accent-primary);
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+}
+
+/* ============================================
+   Map Container
+   ============================================ */
 #map {
-    height: 600px;
-    width: 100%;
-    max-height: 100vh;
+  width: 100%;
+  height: 500px;
+  max-height: 60vh;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-card);
+  margin-top: var(--space-md);
+  overflow: hidden;
+  transition: box-shadow var(--transition-normal);
 }
 
+#map:hover {
+  box-shadow: var(--shadow-card), 0 0 30px rgba(0, 212, 255, 0.15);
+}
+
+/* ============================================
+   Elevation Profile Chart
+   ============================================ */
 #elevationprofile {
-    height: 150px;
+  height: 150px;
+  min-height: 120px;
+  width: 100%;
 }
 
+/* ============================================
+   Readouts Section
+   ============================================ */
+#readouts {
+  margin-top: var(--space-lg);
+  margin-bottom: var(--space-md);
+}
+
+#readouts h5 {
+  margin-bottom: var(--space-sm);
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+#readouts h5::before {
+  content: '';
+  width: 4px;
+  height: 1.2em;
+  background: var(--accent-gradient);
+  border-radius: var(--radius-full);
+}
+
+#readouts p {
+  font-size: 0.9rem;
+  margin-bottom: var(--space-xs);
+}
+
+#readouts span[data-readout] {
+  color: var(--accent-primary);
+  font-weight: 600;
+}
+
+#insufficienthorizon {
+  color: var(--danger) !important;
+}
+
+/* Same height utility for flexbox */
+.same-height {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.same-height #elevationprofile {
+  flex: 1;
+}
+
+/* ============================================
+   Main Layout
+   ============================================ */
+main {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  padding: var(--space-lg) var(--space-md);
+}
+
+.text-center.mb-4 {
+  margin-bottom: var(--space-lg) !important;
+}
+
+/* ============================================
+   Responsive Design - Mobile First
+   ============================================ */
+
+/* Small devices (phones, 576px and up) */
+@media (max-width: 575.98px) {
+  main {
+    padding: var(--space-md) var(--space-sm);
+  }
+  
+  .card {
+    padding: var(--space-md);
+  }
+  
+  #map {
+    height: 45vh;
+    min-height: 280px;
+    margin-top: var(--space-sm);
+  }
+  
+  .input-group {
+    flex-wrap: wrap;
+  }
+  
+  .input-group .input-group-text:first-child {
+    width: 100%;
+    border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+    border-bottom: none;
+    justify-content: center;
+  }
+  
+  .input-group .form-control {
+    border-radius: 0;
+  }
+  
+  .input-group .btn,
+  .input-group .input-group-text:last-child {
+    border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+  }
+  
+  .input-group .btn {
+    width: 100%;
+  }
+
+  .btn {
+    padding: var(--space-sm) var(--space-md);
+    font-size: 0.9rem;
+  }
+  
+  h1 {
+    font-size: 1.5rem;
+  }
+  
+  body::before,
+  body::after {
+    width: 200px;
+    height: 200px;
+    filter: blur(60px);
+  }
+}
+
+/* Medium devices (tablets, 768px and up) */
+@media (min-width: 576px) and (max-width: 991.98px) {
+  #map {
+    height: 50vh;
+    min-height: 350px;
+  }
+  
+  .card {
+    padding: var(--space-md);
+  }
+}
+
+/* Large devices (desktops, 992px and up) */
+@media (min-width: 992px) {
+  main {
+    padding: var(--space-xl) var(--space-lg);
+    height: 100vh;
+    overflow: hidden;
+  }
+  
+  #map {
+    flex-grow: 1;
+    height: auto;
+    max-height: none;
+    min-height: 300px;
+  }
+  
+  body {
+    overflow: hidden;
+  }
+}
+
+/* ============================================
+   Animations & Micro-interactions
+   ============================================ */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.card {
+  animation: fadeIn 0.5s ease forwards;
+}
+
+.row.g-3 > .col-md-6:nth-child(1) .card {
+  animation-delay: 0.1s;
+}
+
+.row.g-3 > .col-md-6:nth-child(2) .card {
+  animation-delay: 0.2s;
+}
+
+/* Pulse effect for important elements */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+#insufficienthorizon:not(.d-none) {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+/* ============================================
+   Utility Classes
+   ============================================ */
+.text-gradient {
+  background: var(--accent-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.glow {
+  box-shadow: var(--shadow-glow);
+}
+
+/* ============================================
+   Print Styles
+   ============================================ */
+@media print {
+  body::before,
+  body::after {
+    display: none;
+  }
+  
+  .card {
+    box-shadow: none;
+    border: 1px solid #ccc;
+  }
+}
+
+/* ============================================
+   Footer (if needed)
+   ============================================ */
 footer {
-    background-color: lightgray;
+  background: var(--glass-bg);
+  backdrop-filter: blur(10px);
+  padding: var(--space-md);
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.85rem;
 }
