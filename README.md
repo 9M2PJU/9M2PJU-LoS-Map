@@ -1,67 +1,75 @@
-# 9M2PJU Line-of-Sight Map
+# 📡 9M2PJU Line-of-Sight Map
 
-This is a UHF/VHF Line-of-Sight Calculator designed for amateur radio operators, particularly those working on the 70 cm and 2 meter bands. It helps identify potential line-of-sight paths between two locations, where terrain and elevation play a more critical role than atmospheric conditions.
+![License](https://img.shields.io/badge/license-MIT-blue.svg) ![Version](https://img.shields.io/badge/version-2.0.0-purple.svg) ![PWA](https://img.shields.io/badge/PWA-Supported-green.svg)
 
-This tool features:
-- Elevation profile mapping along a path
-- Geocoding (address/coordinates search)
-- Interactive line drawing
-- Clean, ad-free interface
-- Fully responsive dark mode design
-- Optimized for mobile and desktop browsers
+A modern, high-precision **UHF/VHF Line-of-Sight Calculator** designed for amateur radio operators. This tool visualizes potential signal paths between two coordinates using real-world terrain data, helping you plan links for 70cm and 2m bands.
 
-🌐 Live version: [https://los.hamradio.my](https://los.hamradio.my)  
-
-No signup. No ads. No nonsense — just effective line-of-sight calculation.
+**[🌐 LIVE APP: https://los.hamradio.my](https://los.hamradio.my)**
 
 ---
 
-## 🔧 Modifications by 9M2PJU
+## ✨ Features
 
-This fork includes the following enhancements:
-
-- ✅ **Dark Mode UI** using Bootstrap 5.3 with a mobile-first layout  
-- ✅ **SEO meta tags** for better discoverability  
-- ✅ **Improved Highcharts theme** for dark elevation profiles  
-- ✅ **Responsive layout** for phones, tablets, and desktops  
-- ✅ **Clean UI structure** using cards, form controls, and spacing improvements  
-- ✅ **Malay & international ham operator friendly** usage  
-- ✅ **Hosted on a Malaysian ham radio domain** for regional convenience  
+- **🎨 Modern Dark Theme**: A stunning "Deep Space" interface with glassmorphism effects, animated background orbs, and fluid animations.
+- **📱 Mobile-First Design**: Fully responsive layout that adapts perfectly to phones, tablets, and desktops.
+- **🚀 Installable App (PWA)**: Install it directly to your home screen! Works like a native app with offline capabilities.
+- **🗺️ Interactive Map**: Drag-and-drop markers for Transmitting and Receiving locations.
+- **⛰️ Elevation Profile**: Real-time terrain analysis chart powered by Highcharts.
+- **📍 Smart Geocoding**: Search by address or paste coordinates directly from RepeaterBook.
+- **🇲🇾 Malaysian Ham Friendly**: Default view optimized for the region, hosted by 9M2PJU.
 
 ---
 
-## 📄 License and Acknowledgements
+## 🛠️ Technology Stack
 
-This project is released under the **MIT License**, so you're free to copy, modify, and redistribute it.
-
-### Special Thanks:
-
-- 👨‍💻 **Original Developer:** [Greg Allensworth](https://github.com/gregallensworth/ham-uhfvhf-map) — for creating the base project this was built upon. Without his solid groundwork, this tool wouldn’t exist.  
-- 🗺️ [Leaflet](https://leafletjs.com/) – for the map interface  
-- 🌍 [Esri](https://www.esri.com/) – for the topographic basemap  
-- 🏔️ [Open-Elevation](https://open-elevation.com/) – for elevation API  
-- 🧭 [OpenStreetMap Nominatim](https://nominatim.org/) – for geocoding/search  
-- 📈 [Highcharts](https://www.highcharts.com/) – for the elevation profile chart  
+- **Core**: HTML5, Vanilla JavaScript, CSS3 (Custom Properties)
+- **Map Engine**: [Leaflet.js](https://leafletjs.com/) with Topographic Basemaps
+- **Data Visualization**: [Highcharts](https://www.highcharts.com/)
+- **Styling**: Bootstrap 5 + Custom Glassmorphism CSS
+- **Data Source**: [Open-Elevation API](https://open-elevation.com/)
+- **Geocoding**: [Nominatim (OpenStreetMap)](https://nominatim.org/)
 
 ---
 
-## ⚙️ Development
+## 🚀 Quick Start
 
-There’s no build system or dependency manager required. Any basic web server will do.
+### Online Usage
+Simply visit **[los.hamradio.my](https://los.hamradio.my)** on any device.
 
-To run locally:
+### Local Development
+To run this project locally on your machine:
 
-```bash
-python3 -m http.server
-````
-
-Then open in your browser:
-
-```
-http://localhost:8000
-```
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/9M2PJU/9M2PJU-LoS-Map.git
+   ```
+2. Navigate to the folder:
+   ```bash
+   cd 9M2PJU-LoS-Map
+   ```
+3. Start a simple HTTP server (Python example):
+   ```bash
+   python -m http.server 8000
+   ```
+4. Open `http://localhost:8000` in your browser.
 
 ---
 
-Enjoy exploring UHF/VHF terrain like never before!
+## 💡 How to Use
 
+1. **Enter Locations**: Type an address or latitude,longitude for both the **Transmitter** and **Receiver**.
+2. **Adjust Height**: Enter the mast height (in feet) for both points to improve accuracy.
+3. **Analyze**: The map will draw a blue line between the points.
+   - **Green/Blue Chart**: Shows the terrain profile.
+   - **Warning**: If the path is blocked by terrain, you'll see a warning message.
+4. **RepeaterBook Trick**: You can paste RepeaterBook console coordinates directly into the search box! (See the "How to" section in the app).
+
+---
+
+## 📜 Credits & License
+
+**Redesigned & Maintained by [9M2PJU](https://hamradio.my)** 🇲🇾
+
+Based on the original work by **[Greg Allensworth](https://github.com/gregallensworth/ham-uhfvhf-map)**.
+
+Distributed under the **MIT License**. See `LICENSE` for more information.
