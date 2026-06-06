@@ -49,128 +49,153 @@
 </head>
 
 <body>
-  <main class="container">
-    <!-- Header Section -->
-    <header class="text-center mb-4">
-      <h1 class="fw-bold mb-3">📡 9M2PJU Line-of-Sight Map</h1>
-      <p>This tool helps identify potential line-of-sight paths for <strong>UHF (70 cm)</strong> and <strong>VHF (2
-          m)</strong> amateur radio communications bands where terrain and obstructions often have a greater impact than
-        atmospheric conditions.</p>
-      <p>Enter an address or coordinates for both locations. Drag the map markers to refine your positions and see
-        terrain profiles.</p>
-      <p class="text-muted small">⚠️ Results are terrain-based estimates. Real-world obstacles like buildings or trees
-        may affect accuracy.</p>
-    </header>
+  <div class="dashboard-container">
+    <!-- Sidebar Pane (Left side on desktop, stacked on mobile) -->
+    <aside class="sidebar">
+      <!-- Header Section -->
+      <header class="text-center mb-4">
+        <h1 class="fw-bold mb-3">📡 9M2PJU Line-of-Sight Map</h1>
+        <p>Estimate and visualize VHF/UHF line-of-sight paths using real terrain data.</p>
+        <p class="text-muted small">⚠️ Results are terrain-based estimates. Real-world obstacles like buildings or trees may affect propagation.</p>
+      </header>
 
-    <!-- Instructions Accordion -->
-    <div class="accordion mb-3" id="accordionHelp">
-      <div class="accordion-item">
-        <h2 class="accordion-header" id="headingOne">
-          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-            data-bs-target="#instructions" aria-expanded="false">
-            📍 How to get coordinates from RepeaterBook
-          </button>
-        </h2>
-        <div id="instructions" class="accordion-collapse collapse" data-bs-parent="#accordionHelp">
-          <div class="accordion-body">
-            <ol>
-              <li>Go to a repeater page on RepeaterBook (e.g., <a
-                  href="https://www.repeaterbook.com/repeaters/details.php?state_id=41&ID=365"
-                  target="_blank">example</a>).</li>
-              <li>Open Developer Console with <code>F12</code>, switch to the Console tab.</li>
-              <li>Paste this code: <code>mymap.getCenter().lat + ',' + mymap.getCenter().lng</code></li>
-              <li>If prompted, type <code>allow pasting</code> to proceed.</li>
-              <li>Copy the output (e.g., <code>44.9491733350656,-122.9332083463669</code>) and paste it into the form
-                below (without quote marks).</li>
-            </ol>
+      <!-- Instructions Accordion -->
+      <div class="accordion mb-3" id="accordionHelp">
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="headingOne">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+              data-bs-target="#instructions" aria-expanded="false">
+              📍 Coordinates from RepeaterBook
+            </button>
+          </h2>
+          <div id="instructions" class="accordion-collapse collapse" data-bs-parent="#accordionHelp">
+            <div class="accordion-body">
+              <ol>
+                <li>Go to a repeater page on RepeaterBook (e.g., <a
+                    href="https://www.repeaterbook.com/repeaters/details.php?state_id=41&ID=365"
+                    target="_blank">example</a>).</li>
+                <li>Open Console (<code>F12</code>) and run: <code>mymap.getCenter().lat + ',' + mymap.getCenter().lng</code></li>
+                <li>Copy the coordinates output and paste it into either location field below.</li>
+              </ol>
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- Location Input Form -->
-    <form id="searchform" onsubmit="return false;">
-      <div class="row g-3">
-        <!-- Transmitting Location Card -->
-        <div class="col-md-6">
+      <!-- Location Input Form -->
+      <form id="searchform" onsubmit="return false;" class="mb-3">
+        <div class="d-flex flex-column gap-3 position-relative">
+          <!-- Transmitting Location Card -->
           <div class="card">
-            <h5 class="fw-bold text-center mb-3">📡 Transmitting Location</h5>
+            <h5 class="fw-bold mb-2">📡 Transmitter (Tx)</h5>
             <div class="input-group mb-2">
-              <span class="input-group-text">Lat,lng or address</span>
-              <input type="text" name="xaddr" class="form-control text-end"
-                placeholder="e.g., address or 1.2345,103.5678">
+              <input type="text" name="xaddr" class="form-control"
+                placeholder="Address or lat,lng">
               <button type="button" class="btn btn-outline-primary" name="xsearchgo">Find</button>
+              <button type="button" class="btn btn-outline-secondary" name="xlocate" title="Use current location">📍</button>
             </div>
             <div class="input-group">
               <span class="input-group-text">Mast height</span>
               <input type="number" name="xheight" value="0" min="0" max="500" step="1" class="form-control text-end">
-              <span class="input-group-text">ft</span>
+              <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" id="xunit-toggle">ft</button>
+              <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item active xunit-select" href="#" data-unit="ft">Feet (ft)</a></li>
+                <li><a class="dropdown-item xunit-select" href="#" data-unit="m">Meters (m)</a></li>
+              </ul>
             </div>
           </div>
-        </div>
 
-        <!-- Receiving Location Card -->
-        <div class="col-md-6">
+          <!-- Swap Button -->
+          <div class="text-center my-1">
+            <button type="button" id="btn-swap" class="btn btn-outline-primary btn-swap rounded-circle" title="Swap Locations">
+              🔄
+            </button>
+          </div>
+
+          <!-- Receiving Location Card -->
           <div class="card">
-            <h5 class="fw-bold text-center mb-3">📻 Receiving Location</h5>
+            <h5 class="fw-bold mb-2">📻 Receiver (Rx)</h5>
             <div class="input-group mb-2">
-              <span class="input-group-text">Lat,lng or address</span>
-              <input type="text" name="raddr" class="form-control text-end"
-                placeholder="e.g., address or 1.2345,103.5678">
+              <input type="text" name="raddr" class="form-control"
+                placeholder="Address or lat,lng">
               <button type="button" class="btn btn-outline-primary" name="rsearchgo">Find</button>
+              <button type="button" class="btn btn-outline-secondary" name="rlocate" title="Use current location">📍</button>
             </div>
             <div class="input-group">
               <span class="input-group-text">Mast height</span>
               <input type="number" name="rheight" value="0" min="0" max="500" step="1" class="form-control text-end">
-              <span class="input-group-text">ft</span>
+              <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" id="runit-toggle">ft</button>
+              <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item active runit-select" href="#" data-unit="ft">Feet (ft)</a></li>
+                <li><a class="dropdown-item runit-select" href="#" data-unit="m">Meters (m)</a></li>
+              </ul>
             </div>
           </div>
         </div>
-      </div>
-    </form>
+      </form>
 
-    <!-- Results Readouts -->
-    <div class="d-none" id="readouts">
-      <div class="row g-3 align-items-stretch justify-content-center">
+      <!-- Results Readouts -->
+      <div class="d-none" id="readouts">
+        <!-- LoS Status Badge Card -->
+        <div class="card mb-3 status-card">
+          <h5 class="fw-bold mb-2">Line-of-Sight Status</h5>
+          <div id="los-status-container" class="text-center p-2 rounded text-uppercase fw-bold">
+            <span id="los-status-text">Checking...</span>
+          </div>
+        </div>
+
         <!-- Distance & Bearing Card -->
-        <div class="col-md-6">
-          <div class="card same-height">
-            <h5 class="fw-bold">Distance & Bearing</h5>
-            <p>
-              Distance: <span data-readout="distance_mi"></span> mi, <span data-readout="distance_km"></span> km<br>
-              Horizon: <span data-readout="horizon_mi"></span> mi, <span data-readout="horizon_km"></span> km
-              <span class="d-none fw-bold" id="insufficienthorizon">
-                <br>⚠️ Distance exceeds horizon. Contact unlikely.
-              </span>
-            </p>
-            <p>
-              Elevation (Tx): <span data-readout="transmit_elevation_ft"></span> ft, <span
-                data-readout="transmit_elevation_m"></span> m<br>
-              Elevation (Rx): <span data-readout="receive_elevation_ft"></span> ft, <span
-                data-readout="receive_elevation_m"></span> m
-            </p>
-            <p>Bearing: <span data-readout="bearing_deg"></span>&deg;, <span data-readout="bearing_txt"></span></p>
-          </div>
-        </div>
+        <div class="card mb-3">
+          <h5 class="fw-bold mb-3">Link Summary</h5>
+          <div class="row g-2 text-small">
+            <div class="col-6 text-muted">Distance:</div>
+            <div class="col-6 text-end fw-bold"><span data-readout="distance_mi"></span> mi / <span data-readout="distance_km"></span> km</div>
 
-        <!-- Elevation Profile Card -->
-        <div class="col-md-6">
-          <div class="card same-height">
-            <h5 class="fw-bold">Elevation Profile</h5>
-            <div id="elevationprofile"></div>
+            <div class="col-6 text-muted">Radio Horizon:</div>
+            <div class="col-6 text-end fw-bold"><span data-readout="horizon_mi"></span> mi / <span data-readout="horizon_km"></span> km</div>
+
+            <div class="col-12 text-center text-danger fw-bold d-none" id="insufficienthorizon">
+              ⚠️ Distance exceeds radio horizon!
+            </div>
+
+            <hr class="my-2 opacity-25">
+
+            <div class="col-6 text-muted">Elevation (Tx):</div>
+            <div class="col-6 text-end fw-bold"><span data-readout="transmit_elevation_ft"></span> ft / <span data-readout="transmit_elevation_m"></span> m</div>
+
+            <div class="col-6 text-muted">Elevation (Rx):</div>
+            <div class="col-6 text-end fw-bold"><span data-readout="receive_elevation_ft"></span> ft / <span data-readout="receive_elevation_m"></span> m</div>
+
+            <hr class="my-2 opacity-25">
+
+            <div class="col-6 text-muted">Bearing:</div>
+            <div class="col-6 text-end fw-bold"><span data-readout="bearing_deg"></span>&deg; (<span data-readout="bearing_txt"></span>)</div>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- Map Container -->
-    <div id="map"></div>
-  </main>
+      <!-- Footer in Sidebar -->
+      <footer class="mt-auto pt-3 text-center border-top border-secondary border-opacity-10">
+        <p class="mb-0 text-muted small">Redesign by <a href="https://hamradio.my" target="_blank" rel="noopener noreferrer">9M2PJU</a> 🇲🇾</p>
+      </footer>
+    </aside>
 
-  <!-- Footer -->
-  <footer>
-    <p>Redesign by <a href="https://hamradio.my" target="_blank" rel="noopener noreferrer">9M2PJU</a> 🇲🇾</p>
-  </footer>
+    <!-- Main Content Pane (Right side on desktop, stacked on mobile) -->
+    <main class="main-content">
+      <div id="map"></div>
+      
+      <!-- Elevation Profile Panel -->
+      <div id="elevation-container" class="card shadow-lg m-3">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h5 class="fw-bold m-0 d-flex align-items-center gap-2">
+            📊 <span>Elevation Profile & Line-of-Sight</span>
+          </h5>
+          <span class="text-muted small">Zoom: Click & drag on chart</span>
+        </div>
+        <div id="elevationprofile"></div>
+      </div>
+    </main>
+  </div>
 
   <!-- Highcharts Dark Theme Configuration -->
   <script>

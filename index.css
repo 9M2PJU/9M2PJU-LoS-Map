@@ -391,72 +391,294 @@ input.form-control::placeholder {
 }
 
 /* ============================================
-   Main Layout
+   Main Layout & Dashboard
    ============================================ */
-main {
+.dashboard-container {
   display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  padding: var(--space-lg) var(--space-md);
+  flex-direction: row;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  position: relative;
 }
 
-.text-center.mb-4 {
-  margin-bottom: var(--space-lg) !important;
+.sidebar {
+  width: 420px;
+  min-width: 420px;
+  max-width: 420px;
+  height: 100%;
+  overflow-y: auto;
+  background: rgba(15, 12, 41, 0.4);
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
+  border-right: 1px solid var(--glass-border);
+  padding: var(--space-xl) var(--space-lg) var(--space-lg) var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  box-shadow: 10px 0 32px rgba(0, 0, 0, 0.25);
+  z-index: 10;
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.15);
+  position: relative;
+}
+
+#map {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  border: none;
+  border-radius: 0;
+  margin: 0;
+  box-shadow: none;
+  z-index: 1;
+}
+
+#elevation-container {
+  height: 250px;
+  min-height: 200px;
+  max-height: 350px;
+  margin: var(--space-md) !important;
+  background: rgba(15, 12, 41, 0.7);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  padding: var(--space-md) var(--space-lg);
+  z-index: 2;
+}
+
+/* ============================================
+   Swap Button & GPS Buttons
+   ============================================ */
+.btn-swap {
+  width: 44px;
+  height: 44px;
+  min-height: 44px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  border-radius: 50% !important;
+  transition: transform var(--transition-normal), background var(--transition-fast), border-color var(--transition-fast);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid var(--glass-border) !important;
+  color: var(--accent-primary) !important;
+  z-index: 5;
+}
+
+.btn-swap:hover {
+  transform: rotate(180deg) scale(1.1);
+  border-color: var(--accent-primary) !important;
+  background: var(--accent-gradient) !important;
+  color: white !important;
+  box-shadow: var(--shadow-glow);
+}
+
+.btn-swap:active {
+  transform: rotate(180deg) scale(0.95);
+}
+
+.input-group .btn-outline-secondary {
+  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-secondary);
+}
+
+.input-group .btn-outline-secondary:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: var(--accent-primary);
+  border-color: var(--accent-primary);
+}
+
+/* ============================================
+   Custom Pulsing Leaflet Markers
+   ============================================ */
+.custom-marker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.marker-pin {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid #ffffff;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.6);
+  z-index: 2;
+}
+
+.marker-pulse {
+  position: absolute;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  animation: marker-pulse 2.2s infinite ease-out;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.marker-tx .marker-pin {
+  background-color: var(--success);
+}
+.marker-tx .marker-pulse {
+  border: 3px solid var(--success);
+}
+
+.marker-rx .marker-pin {
+  background-color: var(--accent-primary);
+}
+.marker-rx .marker-pulse {
+  border: 3px solid var(--accent-primary);
+}
+
+@keyframes marker-pulse {
+  0% {
+    transform: scale(0.4);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
+
+/* ============================================
+   LoS Status Badge styling
+   ============================================ */
+#los-status-container {
+  border: 1px solid var(--glass-border);
+  transition: all var(--transition-normal);
+  letter-spacing: 0.05em;
+  font-size: 0.9rem;
+}
+
+.los-clear {
+  background: rgba(0, 255, 136, 0.1) !important;
+  border-color: rgba(0, 255, 136, 0.4) !important;
+  color: var(--success) !important;
+  box-shadow: 0 0 15px rgba(0, 255, 136, 0.15);
+}
+
+.los-blocked {
+  background: rgba(255, 68, 102, 0.15) !important;
+  border-color: rgba(255, 68, 102, 0.4) !important;
+  color: var(--danger) !important;
+  box-shadow: 0 0 15px rgba(255, 68, 102, 0.15);
+}
+
+.los-calculating {
+  background: rgba(0, 212, 255, 0.1) !important;
+  border-color: rgba(0, 212, 255, 0.4) !important;
+  color: var(--accent-primary) !important;
+}
+
+/* ============================================
+   Dropdown styling
+   ============================================ */
+.dropdown-menu {
+  background: rgba(15, 12, 41, 0.95) !important;
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border: 1px solid var(--glass-border) !important;
+  box-shadow: var(--shadow-card) !important;
+  padding: 0.25rem 0;
+}
+
+.dropdown-item {
+  color: var(--text-secondary) !important;
+  transition: all var(--transition-fast) !important;
+  font-size: 0.85rem !important;
+  padding: 0.4rem 1rem !important;
+}
+
+.dropdown-item:hover, .dropdown-item:focus {
+  background: rgba(0, 212, 255, 0.1) !important;
+  color: var(--accent-primary) !important;
+}
+
+.dropdown-item.active {
+  background: var(--accent-gradient) !important;
+  color: #ffffff !important;
 }
 
 /* ============================================
    Responsive Design - Mobile First
    ============================================ */
 
-/* Small devices (phones, 576px and up) */
-@media (max-width: 575.98px) {
-  main {
-    padding: var(--space-md) var(--space-sm);
-  }
-  
-  .card {
-    padding: var(--space-md);
-  }
-  
-  #map {
-    height: 45vh;
-    min-height: 280px;
-    margin-top: var(--space-sm);
-  }
-  
-  .input-group {
-    flex-wrap: wrap;
-  }
-  
-  .input-group .input-group-text:first-child {
-    width: 100%;
-    border-radius: var(--radius-sm) var(--radius-sm) 0 0;
-    border-bottom: none;
-    justify-content: center;
-  }
-  
-  .input-group .form-control {
-    border-radius: 0;
-  }
-  
-  .input-group .btn,
-  .input-group .input-group-text:last-child {
-    border-radius: 0 0 var(--radius-sm) var(--radius-sm);
-  }
-  
-  .input-group .btn {
-    width: 100%;
+/* Mobile & Tablet Devices (under 992px) */
+@media (max-width: 991.98px) {
+  html, body {
+    overflow-y: auto;
+    height: auto;
   }
 
-  .btn {
-    padding: var(--space-sm) var(--space-md);
-    font-size: 0.9rem;
+  .dashboard-container {
+    flex-direction: column;
+    height: auto;
+    overflow: visible;
   }
-  
+
+  .sidebar {
+    width: 100%;
+    min-width: 100%;
+    max-width: 100%;
+    height: auto;
+    overflow: visible;
+    padding: var(--space-lg) var(--space-md);
+    box-shadow: none;
+    border-right: none;
+    border-bottom: 1px solid var(--glass-border);
+  }
+
+  .main-content {
+    width: 100%;
+    height: auto;
+    overflow: visible;
+    display: block;
+    padding: 0 var(--space-md) var(--space-md) var(--space-md);
+  }
+
+  #map {
+    height: 50vh;
+    min-height: 350px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--glass-border);
+    margin-top: var(--space-md);
+    z-index: 1;
+  }
+
+  #elevation-container {
+    height: 220px;
+    margin: var(--space-md) 0 0 0 !important;
+  }
+}
+
+/* Small screen adjustments */
+@media (max-width: 575.98px) {
+  .sidebar {
+    padding: var(--space-md) var(--space-sm);
+  }
+
+  #map {
+    height: 45vh;
+    min-height: 300px;
+  }
+
   h1 {
-    font-size: 1.5rem;
+    font-size: 1.6rem;
   }
-  
+
   body::before,
   body::after {
     width: 200px;
@@ -465,35 +687,11 @@ main {
   }
 }
 
-/* Medium devices (tablets, 768px and up) */
-@media (min-width: 576px) and (max-width: 991.98px) {
-  #map {
-    height: 50vh;
-    min-height: 350px;
-  }
-  
-  .card {
-    padding: var(--space-md);
-  }
-}
-
 /* Large devices (desktops, 992px and up) */
 @media (min-width: 992px) {
-  main {
-    padding: var(--space-xl) var(--space-lg);
+  html, body {
+    overflow: hidden;
     height: 100vh;
-    overflow: hidden;
-  }
-  
-  #map {
-    flex-grow: 1;
-    height: auto;
-    max-height: none;
-    min-height: 300px;
-  }
-  
-  body {
-    overflow: hidden;
   }
 }
 
@@ -515,11 +713,11 @@ main {
   animation: fadeIn 0.5s ease forwards;
 }
 
-.row.g-3 > .col-md-6:nth-child(1) .card {
+.sidebar .card:nth-child(1) {
   animation-delay: 0.1s;
 }
 
-.row.g-3 > .col-md-6:nth-child(2) .card {
+.sidebar .card:nth-child(2) {
   animation-delay: 0.2s;
 }
 
@@ -562,14 +760,3 @@ main {
   }
 }
 
-/* ============================================
-   Footer (if needed)
-   ============================================ */
-footer {
-  background: var(--glass-bg);
-  backdrop-filter: blur(10px);
-  padding: var(--space-md);
-  text-align: center;
-  color: var(--text-muted);
-  font-size: 0.85rem;
-}
