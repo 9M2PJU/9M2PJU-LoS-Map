@@ -1,5 +1,5 @@
 // 9M2PJU Line-of-Sight Map - Service Worker
-const CACHE_NAME = 'los-map-v1';
+const CACHE_NAME = 'los-map-v2';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -62,7 +62,7 @@ self.addEventListener('fetch', (event) => {
 
   // For static assets and CDN, use cache-first strategy
   event.respondWith(
-    caches.match(request).then((cachedResponse) => {
+    caches.match(request, { ignoreSearch: true }).then((cachedResponse) => {
       if (cachedResponse) {
         return cachedResponse;
       }
