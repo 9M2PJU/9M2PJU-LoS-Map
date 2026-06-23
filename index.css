@@ -563,6 +563,42 @@ h1 {
   color: #0f172a;
 }
 
+.leaflet-control-layers {
+  overflow: hidden;
+  border: 1px solid rgba(148, 163, 184, 0.25) !important;
+  border-radius: var(--radius-sm);
+  background: rgba(15, 23, 42, 0.92);
+  box-shadow: var(--shadow);
+  color: var(--text);
+  backdrop-filter: blur(12px);
+}
+
+.leaflet-control-layers-expanded {
+  padding: 10px 12px;
+}
+
+.leaflet-control-layers-list {
+  margin: 0;
+}
+
+.leaflet-control-layers-base label {
+  display: block;
+  margin: 0;
+  color: var(--text-soft);
+  font: 700 0.82rem/1.35 var(--font-body);
+  cursor: pointer;
+}
+
+.leaflet-control-layers-base label + label {
+  margin-top: 7px;
+}
+
+.leaflet-control-layers-selector {
+  accent-color: var(--accent);
+  margin: 0 6px 0 0;
+  vertical-align: -2px;
+}
+
 .custom-marker {
   position: relative;
   display: flex;
