@@ -1,9 +1,12 @@
 {
   "name": "9M2PJU Line-of-Sight Map",
-  "short_name": "LoS Map",
+  "short_name": "9M2PJU LoS",
+  "id": "/",
   "description": "Estimate and visualize line-of-sight communication paths for UHF and VHF amateur radio using real terrain data.",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
   "background_color": "#0b1117",
   "theme_color": "#111827",
   "orientation": "any",
@@ -15,13 +18,34 @@
       "purpose": "any"
     },
     {
-      "src": "favicon.png",
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
     }
   ],
+  "shortcuts": [
+    {
+      "name": "Open LoS Map",
+      "short_name": "Map",
+      "description": "Open the line-of-sight planner.",
+      "url": "/",
+      "icons": [
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  ],
   "categories": ["utilities", "navigation"],
   "lang": "en",
-  "scope": "/"
+  "prefer_related_applications": false
 }
