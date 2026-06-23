@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">9M2PJU Line-of-Sight Map logo</title>
+  <desc id="desc">A dark rounded square logo with a 9M monogram, radio horizon arc, and line-of-sight signal path.</desc>
+  <defs>
+    <linearGradient id="bg" x1="72" x2="440" y1="52" y2="460" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#172132"/>
+      <stop offset="1" stop-color="#071018"/>
+    </linearGradient>
+    <linearGradient id="mark" x1="118" x2="398" y1="112" y2="368" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#67e8f9"/>
+      <stop offset=".55" stop-color="#22d3ee"/>
+      <stop offset="1" stop-color="#34d399"/>
+    </linearGradient>
+    <filter id="soft-glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="10" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <rect x="28" y="28" width="456" height="456" rx="92" fill="none" stroke="#22d3ee" stroke-opacity=".24" stroke-width="10"/>
+
+  <path d="M100 304c43-78 95-116 156-116s113 38 156 116" fill="none" stroke="#1e293b" stroke-width="64" stroke-linecap="round"/>
+  <path d="M112 302c40-55 88-82 144-82s104 27 144 82" fill="none" stroke="url(#mark)" stroke-width="24" stroke-linecap="round" filter="url(#soft-glow)"/>
+  <path d="M154 266c30-25 64-38 102-38s72 13 102 38" fill="none" stroke="#34d399" stroke-opacity=".62" stroke-width="11" stroke-linecap="round"/>
+
+  <circle cx="126" cy="308" r="22" fill="#34d399" stroke="#ecfeff" stroke-width="8"/>
+  <circle cx="386" cy="308" r="22" fill="#38bdf8" stroke="#ecfeff" stroke-width="8"/>
+  <path d="M126 308h260" fill="none" stroke="#fb7185" stroke-width="12" stroke-linecap="round" stroke-dasharray="28 20"/>
+
+  <path d="M256 196v-58" fill="none" stroke="#f8fafc" stroke-opacity=".9" stroke-width="16" stroke-linecap="round"/>
+  <circle cx="256" cy="126" r="22" fill="#f8fafc"/>
+
+  <text x="256" y="421" text-anchor="middle" fill="#f8fafc" font-family="Inter, Arial, sans-serif" font-size="128" font-weight="900" letter-spacing="-3">9M</text>
+</svg>

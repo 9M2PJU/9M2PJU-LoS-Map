@@ -16,9 +16,10 @@
     content="Estimate and visualize line-of-sight communication paths for UHF (70 cm) and VHF (2 m) amateur radio using real terrain data.">
   <meta property="og:url" content="https://los.hamradio.my">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="theme-color" content="#0f0c29">
+  <meta name="theme-color" content="#111827">
 
-  <link rel="shortcut icon" href="favicon.png" type="image/x-icon" />
+  <link rel="icon" href="logo.svg" type="image/svg+xml">
+  <link rel="alternate icon" href="favicon.png" type="image/png">
   <link rel="apple-touch-icon" href="favicon.png">
   <link rel="manifest" href="manifest.json">
 
@@ -44,28 +45,31 @@
   <script src="https://code.jquery.com/jquery-3.7.1.min.js" crossorigin="anonymous"></script>
 
   <!-- Custom Styles -->
-  <link rel="stylesheet" href="index.css?v=2.1">
-  <script src="index.js?v=2.1"></script>
+  <link rel="stylesheet" href="index.css?v=2.2">
+  <script src="index.js?v=2.2"></script>
 </head>
 
 <body>
   <div class="dashboard-container">
-    <!-- Sidebar Pane (Left side on desktop, stacked on mobile) -->
     <aside class="sidebar">
-      <!-- Header Section -->
-      <header class="text-center mb-4">
-        <h1 class="fw-bold mb-3">📡 9M2PJU Line-of-Sight Map</h1>
-        <p>Estimate and visualize VHF/UHF line-of-sight paths using real terrain data.</p>
-        <p class="text-muted small">⚠️ Results are terrain-based estimates. Real-world obstacles like buildings or trees may affect propagation.</p>
+      <header class="app-header">
+        <div class="brand-row">
+          <img class="brand-logo" src="logo.svg" alt="" width="48" height="48" aria-hidden="true">
+          <div>
+            <p class="eyebrow">Amateur radio path planner</p>
+            <h1>9M2PJU LoS Map</h1>
+          </div>
+        </div>
+        <p class="lead-copy">Estimate VHF/UHF line-of-sight links with terrain elevation and mast-height inputs.</p>
+        <p class="field-note">Terrain estimate only. Buildings, trees, Fresnel clearance, and local conditions can affect real links.</p>
       </header>
 
-      <!-- Instructions Accordion -->
-      <div class="accordion mb-3" id="accordionHelp">
+      <div class="accordion helper-panel" id="accordionHelp">
         <div class="accordion-item">
           <h2 class="accordion-header" id="headingOne">
             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
               data-bs-target="#instructions" aria-expanded="false">
-              📍 Coordinates from RepeaterBook
+              Coordinates from RepeaterBook
             </button>
           </h2>
           <div id="instructions" class="accordion-collapse collapse" data-bs-parent="#accordionHelp">
@@ -82,251 +86,240 @@
         </div>
       </div>
 
-      <!-- Location Input Form -->
-      <form id="searchform" onsubmit="return false;" class="mb-3">
-        <div class="d-flex flex-column gap-3 position-relative">
-          <!-- Transmitting Location Card -->
-          <div class="card">
-            <h5 class="fw-bold mb-2">📡 Transmitter (Tx)</h5>
-            <div class="input-group mb-2">
-              <input type="text" name="xaddr" class="form-control"
-                placeholder="Address or lat,lng">
-              <button type="button" class="btn btn-outline-primary" name="xsearchgo">Find</button>
-              <button type="button" class="btn btn-outline-secondary" name="xlocate" title="Use current location">📍</button>
+      <form id="searchform" onsubmit="return false;">
+        <div class="endpoint-stack">
+          <section class="card endpoint-card endpoint-tx">
+            <div class="card-title-row">
+              <h5>Transmitter</h5>
+              <span class="endpoint-pill">Tx</span>
             </div>
-            <div class="input-group">
+            <label class="form-label" for="xaddr">Location</label>
+            <div class="input-group control-row">
+              <input type="text" name="xaddr" class="form-control"
+                id="xaddr" placeholder="Address or lat,lng" autocomplete="off">
+              <button type="button" class="btn btn-outline-primary" name="xsearchgo">Find</button>
+              <button type="button" class="btn btn-icon btn-outline-secondary" name="xlocate" title="Use current location" aria-label="Use current location for transmitter">GPS</button>
+            </div>
+            <label class="form-label" for="xheight">Mast height</label>
+            <div class="input-group control-row">
               <span class="input-group-text">Mast height</span>
-              <input type="number" name="xheight" value="0" min="0" max="500" step="1" class="form-control text-end">
+              <input type="number" name="xheight" id="xheight" value="0" min="0" max="500" step="1" class="form-control text-end">
               <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" id="xunit-toggle">ft</button>
               <ul class="dropdown-menu dropdown-menu-end">
                 <li><a class="dropdown-item active xunit-select" href="#" data-unit="ft">Feet (ft)</a></li>
                 <li><a class="dropdown-item xunit-select" href="#" data-unit="m">Meters (m)</a></li>
               </ul>
             </div>
-          </div>
+          </section>
 
-          <!-- Swap Button -->
-          <div class="text-center my-1">
-            <button type="button" id="btn-swap" class="btn btn-outline-primary btn-swap rounded-circle" title="Swap Locations">
-              🔄
+          <div class="swap-row">
+            <button type="button" id="btn-swap" class="btn btn-outline-primary btn-swap" title="Swap locations">
+              Swap
             </button>
           </div>
 
-          <!-- Receiving Location Card -->
-          <div class="card">
-            <h5 class="fw-bold mb-2">📻 Receiver (Rx)</h5>
-            <div class="input-group mb-2">
-              <input type="text" name="raddr" class="form-control"
-                placeholder="Address or lat,lng">
-              <button type="button" class="btn btn-outline-primary" name="rsearchgo">Find</button>
-              <button type="button" class="btn btn-outline-secondary" name="rlocate" title="Use current location">📍</button>
+          <section class="card endpoint-card endpoint-rx">
+            <div class="card-title-row">
+              <h5>Receiver</h5>
+              <span class="endpoint-pill">Rx</span>
             </div>
-            <div class="input-group">
+            <label class="form-label" for="raddr">Location</label>
+            <div class="input-group control-row">
+              <input type="text" name="raddr" class="form-control"
+                id="raddr" placeholder="Address or lat,lng" autocomplete="off">
+              <button type="button" class="btn btn-outline-primary" name="rsearchgo">Find</button>
+              <button type="button" class="btn btn-icon btn-outline-secondary" name="rlocate" title="Use current location" aria-label="Use current location for receiver">GPS</button>
+            </div>
+            <label class="form-label" for="rheight">Mast height</label>
+            <div class="input-group control-row">
               <span class="input-group-text">Mast height</span>
-              <input type="number" name="rheight" value="0" min="0" max="500" step="1" class="form-control text-end">
+              <input type="number" name="rheight" id="rheight" value="0" min="0" max="500" step="1" class="form-control text-end">
               <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" id="runit-toggle">ft</button>
               <ul class="dropdown-menu dropdown-menu-end">
                 <li><a class="dropdown-item active runit-select" href="#" data-unit="ft">Feet (ft)</a></li>
                 <li><a class="dropdown-item runit-select" href="#" data-unit="m">Meters (m)</a></li>
               </ul>
             </div>
-          </div>
+          </section>
         </div>
       </form>
 
-      <!-- Results Readouts -->
       <div class="d-none" id="readouts">
-        <!-- LoS Status Badge Card -->
-        <div class="card mb-3 status-card">
-          <h5 class="fw-bold mb-2">Line-of-Sight Status</h5>
-          <div id="los-status-container" class="text-center p-2 rounded text-uppercase fw-bold">
+        <section class="card status-card">
+          <h5>Line-of-Sight Status</h5>
+          <div id="los-status-container">
             <span id="los-status-text">Checking...</span>
           </div>
-        </div>
+        </section>
 
-        <!-- Distance & Bearing Card -->
-        <div class="card mb-3">
-          <h5 class="fw-bold mb-3">Link Summary</h5>
-          <div class="row g-2 text-small">
-            <div class="col-6 text-muted">Distance:</div>
-            <div class="col-6 text-end fw-bold"><span data-readout="distance_mi"></span> mi / <span data-readout="distance_km"></span> km</div>
-
-            <div class="col-6 text-muted">Radio Horizon:</div>
-            <div class="col-6 text-end fw-bold"><span data-readout="horizon_mi"></span> mi / <span data-readout="horizon_km"></span> km</div>
-
-            <div class="col-12 text-center text-danger fw-bold d-none" id="insufficienthorizon">
-              ⚠️ Distance exceeds radio horizon!
-            </div>
-
-            <hr class="my-2 opacity-25">
-
-            <div class="col-6 text-muted">Elevation (Tx):</div>
-            <div class="col-6 text-end fw-bold"><span data-readout="transmit_elevation_ft"></span> ft / <span data-readout="transmit_elevation_m"></span> m</div>
-
-            <div class="col-6 text-muted">Elevation (Rx):</div>
-            <div class="col-6 text-end fw-bold"><span data-readout="receive_elevation_ft"></span> ft / <span data-readout="receive_elevation_m"></span> m</div>
-
-            <hr class="my-2 opacity-25">
-
-            <div class="col-6 text-muted">Bearing:</div>
-            <div class="col-6 text-end fw-bold"><span data-readout="bearing_deg"></span>&deg; (<span data-readout="bearing_txt"></span>)</div>
+        <section class="card summary-card">
+          <h5>Link Summary</h5>
+          <div class="summary-grid">
+            <span>Distance</span>
+            <strong><span data-readout="distance_mi"></span> mi / <span data-readout="distance_km"></span> km</strong>
+            <span>Radio horizon</span>
+            <strong><span data-readout="horizon_mi"></span> mi / <span data-readout="horizon_km"></span> km</strong>
+            <p class="d-none alert-line" id="insufficienthorizon">Distance exceeds calculated radio horizon.</p>
+            <span>Elevation Tx</span>
+            <strong><span data-readout="transmit_elevation_ft"></span> ft / <span data-readout="transmit_elevation_m"></span> m</strong>
+            <span>Elevation Rx</span>
+            <strong><span data-readout="receive_elevation_ft"></span> ft / <span data-readout="receive_elevation_m"></span> m</strong>
+            <span>Bearing</span>
+            <strong><span data-readout="bearing_deg"></span>&deg; <span data-readout="bearing_txt"></span></strong>
           </div>
-        </div>
+        </section>
       </div>
 
-      <!-- Footer in Sidebar -->
-      <footer class="mt-auto pt-3 text-center border-top border-secondary border-opacity-10">
-        <p class="mb-0 text-muted small">Redesign by <a href="https://hamradio.my" target="_blank" rel="noopener noreferrer">9M2PJU</a> 🇲🇾</p>
+      <footer class="app-footer">
+        <p>Maintained by <a href="https://hamradio.my" target="_blank" rel="noopener noreferrer">9M2PJU</a></p>
       </footer>
     </aside>
 
-    <!-- Main Content Pane (Right side on desktop, stacked on mobile) -->
     <main class="main-content">
       <div id="map"></div>
       
-      <!-- Elevation Profile Panel -->
-      <div id="elevation-container" class="card shadow-lg m-3">
-        <div class="d-flex justify-content-between align-items-center mb-2">
-          <h5 class="fw-bold m-0 d-flex align-items-center gap-2">
-            📊 <span>Elevation Profile & Line-of-Sight</span>
-          </h5>
-          <span class="text-muted small">Zoom: Click & drag on chart</span>
+      <section id="elevation-container" class="card">
+        <div class="chart-header">
+          <h5>Elevation Profile</h5>
+          <span>Drag chart to zoom</span>
         </div>
         <div id="elevationprofile"></div>
-      </div>
+      </section>
     </main>
   </div>
 
   <!-- Highcharts Dark Theme Configuration -->
   <script>
-    // Custom dark theme for Highcharts
-    Highcharts.setOptions({
-      chart: {
-        backgroundColor: 'transparent',
-        style: {
-          fontFamily: 'Inter, sans-serif'
-        }
-      },
-      title: {
-        style: {
-          color: '#ffffff'
-        }
-      },
-      legend: {
-        itemStyle: {
-          color: '#ffffff'
-        }
-      },
-      xAxis: {
-        labels: {
+    if (window.Highcharts) {
+      // Custom dark theme for Highcharts
+      Highcharts.setOptions({
+        chart: {
+          backgroundColor: 'transparent',
           style: {
-            color: 'rgba(255, 255, 255, 0.7)'
+            fontFamily: 'Inter, sans-serif'
           }
         },
-        lineColor: 'rgba(255, 255, 255, 0.1)',
-        tickColor: 'rgba(255, 255, 255, 0.1)'
-      },
-      yAxis: {
-        labels: {
+        title: {
           style: {
-            color: 'rgba(255, 255, 255, 0.7)'
+            color: '#f8fafc'
           }
         },
-        gridLineColor: 'rgba(255, 255, 255, 0.05)',
-        lineColor: 'rgba(255, 255, 255, 0.1)',
-        tickColor: 'rgba(255, 255, 255, 0.1)'
-      },
-      tooltip: {
-        backgroundColor: 'rgba(15, 12, 41, 0.95)',
-        borderColor: 'rgba(0, 212, 255, 0.3)',
-        style: {
-          color: '#ffffff'
-        }
-      },
-      plotOptions: {
-        series: {
-          animation: {
-            duration: 800
+        legend: {
+          itemStyle: {
+            color: '#f8fafc'
           }
         },
-        area: {
-          fillColor: {
-            linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
-            stops: [
-              [0, 'rgba(0, 212, 255, 0.4)'],
-              [1, 'rgba(123, 44, 191, 0.1)']
-            ]
+        xAxis: {
+          labels: {
+            style: {
+              color: 'rgba(203, 213, 225, 0.9)'
+            }
           },
-          lineColor: '#00d4ff',
-          lineWidth: 2,
-          marker: {
-            enabled: false,
-            states: {
-              hover: {
-                enabled: true,
-                fillColor: '#00d4ff',
-                lineColor: '#ffffff',
-                lineWidth: 2,
-                radius: 5
+          lineColor: 'rgba(226, 232, 240, 0.14)',
+          tickColor: 'rgba(226, 232, 240, 0.14)'
+        },
+        yAxis: {
+          labels: {
+            style: {
+              color: 'rgba(203, 213, 225, 0.9)'
+            }
+          },
+          gridLineColor: 'rgba(226, 232, 240, 0.08)',
+          lineColor: 'rgba(226, 232, 240, 0.14)',
+          tickColor: 'rgba(226, 232, 240, 0.14)'
+        },
+        tooltip: {
+          backgroundColor: 'rgba(17, 24, 39, 0.97)',
+          borderColor: 'rgba(34, 211, 238, 0.35)',
+          style: {
+            color: '#f8fafc'
+          }
+        },
+        plotOptions: {
+          series: {
+            animation: {
+              duration: 800
+            }
+          },
+          area: {
+            fillColor: {
+              linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+              stops: [
+                [0, 'rgba(34, 211, 238, 0.28)'],
+                [1, 'rgba(15, 23, 32, 0.08)']
+              ]
+            },
+            lineColor: '#22d3ee',
+            lineWidth: 2,
+            marker: {
+              enabled: false,
+              states: {
+                hover: {
+                  enabled: true,
+                  fillColor: '#22d3ee',
+                  lineColor: '#ffffff',
+                  lineWidth: 2,
+                  radius: 5
+                }
               }
             }
           }
+        },
+        credits: {
+          enabled: false
         }
-      },
-      credits: {
-        enabled: false
-      }
-    });
+      });
 
-    // Initialize elevation profile chart
-    Highcharts.chart('elevationprofile', {
-      chart: {
-        type: 'area',
-        height: null,
-        zoomType: 'x',
-        panning: true,
-        panKey: 'shift'
-      },
-      title: {
-        text: null
-      },
-      exporting: {
-        enabled: false
-      },
-      xAxis: {
+      // Initialize elevation profile chart
+      Highcharts.chart('elevationprofile', {
+        chart: {
+          type: 'area',
+          height: null,
+          zoomType: 'x',
+          panning: true,
+          panKey: 'shift'
+        },
         title: {
-          text: 'Distance (km)',
-          style: {
-            fontSize: '0.8rem'
+          text: null
+        },
+        exporting: {
+          enabled: false
+        },
+        xAxis: {
+          title: {
+            text: 'Distance (km)',
+            style: {
+              fontSize: '0.8rem'
+            }
+          },
+          labels: {
+            style: {
+              fontSize: '0.75rem'
+            }
           }
         },
-        labels: {
-          style: {
-            fontSize: '0.75rem'
-          }
-        }
-      },
-      yAxis: {
-        title: {
-          text: 'Elevation (m)',
-          style: {
-            fontSize: '0.8rem'
+        yAxis: {
+          title: {
+            text: 'Elevation (m)',
+            style: {
+              fontSize: '0.8rem'
+            }
+          },
+          labels: {
+            style: {
+              fontSize: '0.75rem'
+            }
           }
         },
-        labels: {
-          style: {
-            fontSize: '0.75rem'
-          }
-        }
-      },
-      tooltip: {
-        pointFormat: '<span style="color:{series.color}">\u25CF</span> {series.name}: <b>{point.y:.0f} m</b> at <b>{point.x:.2f} km</b><br/>'
-      },
-      series: [{
-        name: 'Elevation',
-        data: []
-      }]
-    });
+        tooltip: {
+          pointFormat: '<span style="color:{series.color}">\u25CF</span> {series.name}: <b>{point.y:.0f} m</b> at <b>{point.x:.2f} km</b><br/>'
+        },
+        series: [{
+          name: 'Elevation',
+          data: []
+        }]
+      });
+    }
   </script>
 
   <!-- Service Worker Registration -->

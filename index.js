@@ -105,9 +105,9 @@ $(document).ready(function () {
     });
 
     MAP.lineofsight = L.polyline([[0, 0], [0, 0]], {
-        color: 'darkblue',
+        color: '#22d3ee',
         weight: 4,
-        opacity: 0.8
+        opacity: 0.9
     });
 
 	MAP.tooltip = L.tooltip();
@@ -519,12 +519,12 @@ function updateReadouts () {
             // Update status badge UI
             if (isBlocked) {
                 $statusContainer.removeClass('los-calculating los-clear').addClass('los-blocked');
-                $statusText.text('❌ Blocked by Terrain');
-                MAP.lineofsight.setStyle({ color: '#ff4466' }); // Red polyline
+                $statusText.text('Blocked by Terrain');
+                MAP.lineofsight.setStyle({ color: '#fb7185' });
             } else {
                 $statusContainer.removeClass('los-calculating los-blocked').addClass('los-clear');
-                $statusText.text('✅ Clear Line-of-Sight');
-                MAP.lineofsight.setStyle({ color: '#00ff88' }); // Green polyline
+                $statusText.text('Clear Line-of-Sight');
+                MAP.lineofsight.setStyle({ color: '#34d399' });
             }
 
             // Prepare chart points
@@ -554,122 +554,189 @@ function updateReadouts () {
                 };
             });
 
-            // Initialize Highcharts
-            Highcharts.setOptions({
-                plotOptions: {
-                    series: {
-                        animation: false,
-                    },
-                },
-            });
-
-            Highcharts.chart('elevationprofile', {
-                chart: {
-                    backgroundColor: 'transparent',
-                    style: {
-                        fontFamily: 'Inter, sans-serif'
-                    },
-                    marginRight: 10,
-                    spacingBottom: 5
-                },
-                title: {
-                    text: null
-                },
-                xAxis: {
-                    title: {
-                        text: 'Distance (km)',
-                        style: { color: 'rgba(255, 255, 255, 0.6)', fontSize: '0.8rem' }
-                    },
-                    labels: { style: { color: 'rgba(255, 255, 255, 0.6)', fontSize: '0.75rem' } },
-                    lineColor: 'rgba(255, 255, 255, 0.1)',
-                    tickColor: 'rgba(255, 255, 255, 0.1)'
-                },
-                yAxis: {
-                    title: {
-                        text: 'Elevation (m)',
-                        style: { color: 'rgba(255, 255, 255, 0.6)', fontSize: '0.8rem' }
-                    },
-                    labels: { style: { color: 'rgba(255, 255, 255, 0.6)', fontSize: '0.75rem' } },
-                    gridLineColor: 'rgba(255, 255, 255, 0.05)',
-                    lineColor: 'rgba(255, 255, 255, 0.1)',
-                    tickColor: 'rgba(255, 255, 255, 0.1)'
-                },
-                legend: {
-                    enabled: true,
-                    itemStyle: { color: 'rgba(255, 255, 255, 0.8)', fontSize: '0.8rem' }
-                },
-                credits: {
-                    enabled: false
-                },
-                tooltip: {
-                    shared: true,
-                    backgroundColor: 'rgba(15, 12, 41, 0.95)',
-                    borderColor: 'rgba(0, 212, 255, 0.3)',
-                    style: { color: '#ffffff' },
-                    formatter: function () {
-                        const terrainPoint = this.points.find(p => p.series.name === 'Terrain').point;
-                        const losPoint = this.points.find(p => p.series.name === 'Line of Sight').point;
-                        
-                        if (terrainPoint) {
-                            MAP.tooltip.setLatLng([terrainPoint.lat, terrainPoint.lng])
-                                .setContent(`<strong>Distance:</strong> ${terrainPoint.options.distance_km} km (${terrainPoint.options.distance_mi} mi)<br/>
-                                             <strong>Terrain:</strong> ${terrainPoint.options.elevation_m} m (${terrainPoint.options.elevation_ft} ft)<br/>
-                                             <strong>LoS Path:</strong> ${losPoint ? losPoint.options.elevation_m : 0} m (${losPoint ? losPoint.options.elevation_ft : 0} ft)`)
-                                .addTo(MAP);
-                        }
-
-                        let text = `<strong>Distance:</strong> ${terrainPoint.options.distance_km} km (${terrainPoint.options.distance_mi} mi)<br/>`;
-                        text += `<span style="color:#7b2cbf">\u25CF</span> Terrain: <b>${terrainPoint.options.elevation_m} m</b> (${terrainPoint.options.elevation_ft} ft)<br/>`;
-                        if (losPoint) {
-                            const color = isBlocked ? '#ff4466' : '#00ff88';
-                            text += `<span style="color:${color}">\u25CF</span> LoS Path: <b>${losPoint.options.elevation_m} m</b> (${losPoint.options.elevation_ft} ft)`;
-                        }
-                        return text;
-                    }
-                },
-                series: [
-                    {
-                        name: 'Terrain',
-                        type: 'area',
-                        data: terrainPoints,
-                        color: '#7b2cbf',
-                        fillColor: {
-                            linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
-                            stops: [
-                                [0, 'rgba(123, 44, 191, 0.45)'],
-                                [1, 'rgba(15, 12, 41, 0.05)']
-                            ]
-                        },
-                        lineWidth: 2,
-                        marker: { enabled: false },
-                        events: {
-                            mouseOut: function () {
-                                MAP.tooltip.setLatLng([0, 0]).removeFrom(MAP);
-                            }
-                        }
-                    },
-                    {
-                        name: 'Line of Sight',
-                        type: 'line',
-                        data: losPoints,
-                        color: isBlocked ? '#ff4466' : '#00ff88',
-                        lineWidth: 3,
-                        dashStyle: 'Dash',
-                        marker: { enabled: false },
-                        events: {
-                            mouseOut: function () {
-                                MAP.tooltip.setLatLng([0, 0]).removeFrom(MAP);
-                            }
-                        }
-                    }
-                ]
-            });
+            renderElevationProfile(terrainPoints, losPoints, isBlocked);
         },
         error: function() {
             $statusContainer.removeClass('los-calculating').addClass('bg-secondary');
             $statusText.text('Elevation Offline');
         }
     });
+}
+
+function renderElevationProfile(terrainPoints, losPoints, isBlocked) {
+    if (window.Highcharts) {
+        renderHighchartsProfile(terrainPoints, losPoints, isBlocked);
+        return;
+    }
+
+    renderSvgElevationProfile(terrainPoints, losPoints, isBlocked);
+}
+
+function renderHighchartsProfile(terrainPoints, losPoints, isBlocked) {
+    Highcharts.setOptions({
+        plotOptions: {
+            series: {
+                animation: false,
+            },
+        },
+    });
+
+    Highcharts.chart('elevationprofile', {
+        chart: {
+            backgroundColor: 'transparent',
+            style: {
+                fontFamily: 'Inter, sans-serif'
+            },
+            marginRight: 10,
+            spacingBottom: 5
+        },
+        title: {
+            text: null
+        },
+        xAxis: {
+            title: {
+                text: 'Distance (km)',
+                style: { color: 'rgba(203, 213, 225, 0.85)', fontSize: '0.8rem' }
+            },
+            labels: { style: { color: 'rgba(203, 213, 225, 0.78)', fontSize: '0.75rem' } },
+            lineColor: 'rgba(226, 232, 240, 0.14)',
+            tickColor: 'rgba(226, 232, 240, 0.14)'
+        },
+        yAxis: {
+            title: {
+                text: 'Elevation (m)',
+                style: { color: 'rgba(203, 213, 225, 0.85)', fontSize: '0.8rem' }
+            },
+            labels: { style: { color: 'rgba(203, 213, 225, 0.78)', fontSize: '0.75rem' } },
+            gridLineColor: 'rgba(226, 232, 240, 0.08)',
+            lineColor: 'rgba(226, 232, 240, 0.14)',
+            tickColor: 'rgba(226, 232, 240, 0.14)'
+        },
+        legend: {
+            enabled: true,
+            itemStyle: { color: 'rgba(248, 250, 252, 0.82)', fontSize: '0.8rem' }
+        },
+        credits: {
+            enabled: false
+        },
+        tooltip: {
+            shared: true,
+            backgroundColor: 'rgba(17, 24, 39, 0.97)',
+            borderColor: 'rgba(34, 211, 238, 0.35)',
+            style: { color: '#f8fafc' },
+            formatter: function () {
+                const terrainPoint = this.points.find(p => p.series.name === 'Terrain').point;
+                const losPoint = this.points.find(p => p.series.name === 'Line of Sight').point;
+
+                if (terrainPoint) {
+                    MAP.tooltip.setLatLng([terrainPoint.lat, terrainPoint.lng])
+                        .setContent(`<strong>Distance:</strong> ${terrainPoint.options.distance_km} km (${terrainPoint.options.distance_mi} mi)<br/>
+                                     <strong>Terrain:</strong> ${terrainPoint.options.elevation_m} m (${terrainPoint.options.elevation_ft} ft)<br/>
+                                     <strong>LoS Path:</strong> ${losPoint ? losPoint.options.elevation_m : 0} m (${losPoint ? losPoint.options.elevation_ft : 0} ft)`)
+                        .addTo(MAP);
+                }
+
+                let text = `<strong>Distance:</strong> ${terrainPoint.options.distance_km} km (${terrainPoint.options.distance_mi} mi)<br/>`;
+                text += `<span style="color:#22d3ee">\u25CF</span> Terrain: <b>${terrainPoint.options.elevation_m} m</b> (${terrainPoint.options.elevation_ft} ft)<br/>`;
+                if (losPoint) {
+                    const color = isBlocked ? '#fb7185' : '#34d399';
+                    text += `<span style="color:${color}">\u25CF</span> LoS Path: <b>${losPoint.options.elevation_m} m</b> (${losPoint.options.elevation_ft} ft)`;
+                }
+                return text;
+            }
+        },
+        series: [
+            {
+                name: 'Terrain',
+                type: 'area',
+                data: terrainPoints,
+                color: '#22d3ee',
+                fillColor: {
+                    linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+                    stops: [
+                        [0, 'rgba(34, 211, 238, 0.28)'],
+                        [1, 'rgba(15, 23, 32, 0.05)']
+                    ]
+                },
+                lineWidth: 2,
+                marker: { enabled: false },
+                events: {
+                    mouseOut: function () {
+                        MAP.tooltip.setLatLng([0, 0]).removeFrom(MAP);
+                    }
+                }
+            },
+            {
+                name: 'Line of Sight',
+                type: 'line',
+                data: losPoints,
+                color: isBlocked ? '#fb7185' : '#34d399',
+                lineWidth: 3,
+                dashStyle: 'Dash',
+                marker: { enabled: false },
+                events: {
+                    mouseOut: function () {
+                        MAP.tooltip.setLatLng([0, 0]).removeFrom(MAP);
+                    }
+                }
+            }
+        ]
+    });
+}
+
+function renderSvgElevationProfile(terrainPoints, losPoints, isBlocked) {
+    const container = document.getElementById('elevationprofile');
+    if (!container || !terrainPoints.length || !losPoints.length) return;
+
+    const width = Math.max(container.clientWidth || 720, 320);
+    const height = Math.max(container.clientHeight || 180, 150);
+    const pad = { top: 14, right: 16, bottom: 30, left: 48 };
+    const plotWidth = width - pad.left - pad.right;
+    const plotHeight = height - pad.top - pad.bottom;
+    const maxDistance = Math.max(...terrainPoints.map(point => point.x), 1);
+    const elevations = terrainPoints.concat(losPoints).map(point => point.y);
+    const minElevation = Math.min(...elevations);
+    const maxElevation = Math.max(...elevations);
+    const elevationRange = Math.max(maxElevation - minElevation, 1);
+    const yMin = Math.floor((minElevation - elevationRange * 0.08) / 50) * 50;
+    const yMax = Math.ceil((maxElevation + elevationRange * 0.08) / 50) * 50;
+    const yRange = Math.max(yMax - yMin, 1);
+    const losColor = isBlocked ? '#fb7185' : '#34d399';
+
+    const xFor = point => pad.left + (point.x / maxDistance) * plotWidth;
+    const yFor = point => pad.top + ((yMax - point.y) / yRange) * plotHeight;
+    const terrainLine = terrainPoints.map(point => `${xFor(point).toFixed(1)},${yFor(point).toFixed(1)}`).join(' ');
+    const losLine = losPoints.map(point => `${xFor(point).toFixed(1)},${yFor(point).toFixed(1)}`).join(' ');
+    const areaPath = `M ${pad.left},${pad.top + plotHeight} L ${terrainLine.replaceAll(' ', ' L ')} L ${pad.left + plotWidth},${pad.top + plotHeight} Z`;
+    const midElevation = Math.round((yMin + yMax) / 2);
+
+    container.innerHTML = `
+        <svg class="fallback-profile" viewBox="0 0 ${width} ${height}" role="img" aria-label="Elevation profile chart">
+            <defs>
+                <linearGradient id="terrain-fill" x1="0" x2="0" y1="0" y2="1">
+                    <stop offset="0%" stop-color="#22d3ee" stop-opacity="0.28" />
+                    <stop offset="100%" stop-color="#22d3ee" stop-opacity="0.04" />
+                </linearGradient>
+            </defs>
+            <line class="profile-grid" x1="${pad.left}" y1="${pad.top}" x2="${pad.left + plotWidth}" y2="${pad.top}" />
+            <line class="profile-grid" x1="${pad.left}" y1="${pad.top + plotHeight / 2}" x2="${pad.left + plotWidth}" y2="${pad.top + plotHeight / 2}" />
+            <line class="profile-grid" x1="${pad.left}" y1="${pad.top + plotHeight}" x2="${pad.left + plotWidth}" y2="${pad.top + plotHeight}" />
+            <path class="profile-area" d="${areaPath}" />
+            <polyline class="profile-terrain" points="${terrainLine}" />
+            <polyline class="profile-los" points="${losLine}" style="stroke:${losColor}" />
+            <text class="profile-label" x="${pad.left - 8}" y="${pad.top + 4}" text-anchor="end">${Math.round(yMax)} m</text>
+            <text class="profile-label" x="${pad.left - 8}" y="${pad.top + plotHeight / 2 + 4}" text-anchor="end">${midElevation} m</text>
+            <text class="profile-label" x="${pad.left - 8}" y="${pad.top + plotHeight + 4}" text-anchor="end">${Math.round(yMin)} m</text>
+            <text class="profile-label" x="${pad.left}" y="${height - 8}">0 km</text>
+            <text class="profile-label" x="${pad.left + plotWidth}" y="${height - 8}" text-anchor="end">${maxDistance.toFixed(1)} km</text>
+            <g class="profile-legend">
+                <circle cx="${pad.left + 4}" cy="${pad.top + 12}" r="4" fill="#22d3ee" />
+                <text x="${pad.left + 14}" y="${pad.top + 16}">Terrain</text>
+                <circle cx="${pad.left + 86}" cy="${pad.top + 12}" r="4" fill="${losColor}" />
+                <text x="${pad.left + 96}" y="${pad.top + 16}">Line of sight</text>
+            </g>
+        </svg>
+    `;
 }
 
 
@@ -690,5 +757,3 @@ function updateAddressBar () {
 
     document.location.hash = `${xlat},${xlng},${rlat},${rlng},${xheight_ft},${rheight_ft}`;
 }
-
-
