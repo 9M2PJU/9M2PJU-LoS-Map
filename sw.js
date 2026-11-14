@@ -1,5 +1,5 @@
 // 9M2PJU Line-of-Sight Map - Service Worker
-const CACHE_NAME = 'los-map-v6';
+const CACHE_NAME = 'los-map-v7';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
