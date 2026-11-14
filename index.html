@@ -50,8 +50,8 @@
   <script src="https://code.jquery.com/jquery-3.7.1.min.js" crossorigin="anonymous"></script>
 
   <!-- Custom Styles -->
-  <link rel="stylesheet" href="index.css?v=2.5">
-  <script src="index.js?v=2.5"></script>
+  <link rel="stylesheet" href="index.css?v=2.4">
+  <script src="index.js?v=2.4"></script>
 </head>
 
 <body>
@@ -164,25 +164,6 @@
             </div>
           </section>
         </div>
-
-        <section class="card endpoint-card endpoint-radio">
-          <div class="card-title-row">
-            <h5>Radio</h5>
-            <span class="endpoint-pill">RF</span>
-          </div>
-          <label class="form-label" for="freq">Frequency</label>
-          <div class="input-group control-row">
-            <input type="number" name="freq" id="freq" value="433" min="30" max="6000" step="0.5" class="form-control text-end">
-            <span class="input-group-text">MHz</span>
-          </div>
-          <div class="field-error" id="freqerror" role="alert"></div>
-          <div class="map-pick-row freq-row">
-            <button type="button" class="btn btn-outline-secondary btn-sm freq-preset" data-freq="145.5">2 m</button>
-            <button type="button" class="btn btn-outline-secondary btn-sm freq-preset" data-freq="433">70 cm</button>
-            <button type="button" class="btn btn-outline-secondary btn-sm freq-preset" data-freq="927">33 cm</button>
-          </div>
-          <p class="freq-note">Used for 1st Fresnel zone and 60 percent clearance check.</p>
-        </section>
       </form>
 
       <div class="d-none" id="readouts">
@@ -207,13 +188,6 @@
             <strong><span data-readout="receive_elevation_ft"></span> ft / <span data-readout="receive_elevation_m"></span> m</strong>
             <span>Bearing</span>
             <strong><span data-readout="bearing_deg"></span>&deg; <span data-readout="bearing_txt"></span></strong>
-            <span>Frequency</span>
-            <strong><span data-readout="freq_mhz"></span> MHz</strong>
-            <span>Max 1st Fresnel</span>
-            <strong><span data-readout="fresnel_max_m"></span> m</strong>
-            <span>Worst clearance</span>
-            <strong><span data-readout="fresnel_clear_m"></span> m (<span data-readout="fresnel_clear_pct"></span>%)</strong>
-            <p class="d-none alert-line" id="fresnelwarn">First Fresnel zone intruded. Link may be marginal.</p>
           </div>
         </section>
       </div>

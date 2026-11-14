@@ -36,22 +36,6 @@ const ELEV_CACHE_KEY = function(xlat, xlng, rlat, rlng) {
     return [xlat.toFixed(4), xlng.toFixed(4), rlat.toFixed(4), rlng.toFixed(4)].join('|');
 };
 
-// Fresnel zone: effective earth radius with k-factor for VHF/UHF refraction,
-// 60 percent of 1st zone radius required clear.
-const EARTH_R_EFF_M = 6371000 * (4 / 3);
-const FRESNEL_CLEAR_FRACTION = 0.6;
-const DEFAULT_FREQ_MHZ = 433;
-const MIN_FREQ_MHZ = 30;
-const MAX_FREQ_MHZ = 6000;
-
-function clampFreqMHz(v) {
-    let f = parseFloat(v);
-    if (isNaN(f)) return DEFAULT_FREQ_MHZ;
-    if (f < MIN_FREQ_MHZ) return MIN_FREQ_MHZ;
-    if (f > MAX_FREQ_MHZ) return MAX_FREQ_MHZ;
-    return f;
-}
-
 // add to Leaflet LatLng the calculation of a compass heading
 L.LatLng.prototype.bearingTo = function(LatLng) {
     let d2r  = Math.PI / 180;
@@ -86,8 +70,6 @@ $(document).ready(function () {
     const $raddr_go = $form.find('button[name="rsearchgo"]');
     const $xheight = $('input[name="xheight"]');
     const $rheight = $('input[name="rheight"]');
-    const $freq = $('input[name="freq"]');
-    const $freqerror = $('#freqerror');
     
     const $xlocate = $form.find('button[name="xlocate"]');
     const $rlocate = $form.find('button[name="rlocate"]');
@@ -278,21 +260,6 @@ $(document).ready(function () {
     });
     $rheight.change(function (event) {
         $raddr_input.change();
-    });
-    $freq.change(function (event) {
-        const f = clampFreqMHz($freq.val());
-        $freq.val(f);
-        showFieldError($freqerror, '');
-        if (MAP.hasLayer(MAP.xmarker) && MAP.hasLayer(MAP.rmarker)) updateTheLine();
-        saveState();
-    });
-    $freq.keyup(function (event) {
-        if (event.key == 'Enter') $freq.change();
-    });
-    $('.freq-preset').click(function (e) {
-        e.preventDefault();
-        const f = clampFreqMHz($(this).attr('data-freq'));
-        $freq.val(f).change();
     });
 
     // Loading indicator helper
@@ -546,8 +513,7 @@ $(document).ready(function () {
                 rh: $rheight.val(),
                 xu: txUnit,
                 ru: rxUnit,
-                base: MAP._baseName || 'Topographic',
-                freq: clampFreqMHz($freq.val())
+                base: MAP._baseName || 'Topographic'
             };
             localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
         } catch (e) {}
@@ -572,7 +538,6 @@ $(document).ready(function () {
             setUnitVisual('r', rxUnit);
             if (s.xh !== undefined) $xheight.val(s.xh);
             if (s.rh !== undefined) $rheight.val(s.rh);
-            if (s.freq !== undefined) $freq.val(clampFreqMHz(s.freq));
             if (s.base) applyBasemap(s.base);
             if (s.x) $xaddr_input.val(s.x).change();
             if (s.r) $raddr_input.val(s.r).change();
@@ -586,7 +551,7 @@ $(document).ready(function () {
             $xaddr_input.val(`${coords[0]},${coords[1]}`).change();
             $raddr_input.val(`${coords[2]},${coords[3]}`).change();
         }
-        else if ((coords.length == 6 || coords.length == 7) && !isNaN(coords[0]) && !isNaN(coords[1]) && !isNaN(coords[2]) && !isNaN(coords[3]) && !isNaN(coords[4]) && !isNaN(coords[5])) {
+        else if (coords.length == 6 && !isNaN(coords[0]) && !isNaN(coords[1]) && !isNaN(coords[2]) && !isNaN(coords[3]) && !isNaN(coords[4]) && !isNaN(coords[5])) {
             // Initial hash values are always stored in feet
             txUnit = 'ft';
             rxUnit = 'ft';
@@ -594,7 +559,6 @@ $(document).ready(function () {
             setUnitVisual('r', 'ft');
 			$xheight.val(coords[4]);
 			$rheight.val(coords[5]);
-            if (coords.length == 7 && !isNaN(coords[6])) $freq.val(clampFreqMHz(coords[6]));
         	$xaddr_input.val(`${coords[0]},${coords[1]}`).change();
             $raddr_input.val(`${coords[2]},${coords[3]}`).change();
         }
@@ -686,12 +650,8 @@ function updateReadouts () {
     // Update status badge UI to calculating
     const $statusText = $('#los-status-text');
     const $statusContainer = $('#los-status-container');
-    $statusContainer.removeClass('los-clear los-blocked los-marginal bg-secondary').addClass('los-calculating');
-    $statusContainer.css('cursor', '').off('click.retry');
+    $statusContainer.removeClass('los-clear los-blocked').addClass('los-calculating');
     $statusText.text('Calculating...');
-
-    const freqMHz = clampFreqMHz($('input[name="freq"]').val() || DEFAULT_FREQ_MHZ);
-    const lambda_m = 300 / freqMHz;
 
     // generate 50 points along the line
     const howmanypoints = 50;
@@ -764,67 +724,32 @@ function updateReadouts () {
             if (distance_km > horizon_km) $insufficienthorizon.removeClass('d-none');
             else $insufficienthorizon.addClass('d-none');
 
-            $readouts.find('span[data-readout="freq_mhz"]').text(freqMHz);
-
-            // Fresnel zone check with earth bulge (k-factor included in EARTH_R_EFF_M).
-            // Chart shows raw terrain, so the clearance boundary is drawn in
-            // raw-elevation space: los - bulge - 0.6 * r1.
+            // Physical Line of Sight intersection check
             let isBlocked = false;
-            let isMarginal = false;
-            let maxR1 = 0;
-            let worstClear_m = Infinity;
-            let worstPct = Infinity;
             const totalPoints = response.results.length;
 
             for (let i = 1; i < totalPoints - 1; i++) {
+                // Interpolate LoS height at this fraction of the path
                 const fraction = i / (totalPoints - 1);
-                const d1 = lenstep * i;
-                const d2 = totalmeters - d1;
-                const los_h = transmit_total_m + (receive_total_m - transmit_total_m) * fraction;
-                const bulge = (d1 * d2) / (2 * EARTH_R_EFF_M);
-                const r1 = (d1 <= 0 || d2 <= 0 || totalmeters <= 0) ? 0 : Math.sqrt(lambda_m * d1 * d2 / totalmeters);
-                if (r1 > maxR1) maxR1 = r1;
-                const terrainEff = response.results[i].elevation + bulge;
-
-                // Hard block: terrain breaks the geometric line
-                if (terrainEff > los_h) {
+                const los_height_at_point = transmit_total_m + (receive_total_m - transmit_total_m) * fraction;
+                
+                // If terrain is higher than the line of sight line
+                if (response.results[i].elevation > los_height_at_point) {
                     isBlocked = true;
-                }
-                // Fresnel: 60 percent of 1st zone must be clear
-                const clearance = los_h - FRESNEL_CLEAR_FRACTION * r1 - terrainEff;
-                if (clearance < worstClear_m) worstClear_m = clearance;
-                const pct = r1 > 0.01 ? ((los_h - terrainEff) / r1) * 100 : 100;
-                if (pct < worstPct) worstPct = pct;
-                if (!isBlocked && clearance < 0) {
-                    isMarginal = true;
+                    break;
                 }
             }
-            if (!isFinite(worstClear_m)) worstClear_m = 0;
-            if (!isFinite(worstPct)) worstPct = 100;
-
-            $readouts.find('span[data-readout="fresnel_max_m"]').text(maxR1.toFixed(1));
-            $readouts.find('span[data-readout="fresnel_clear_m"]').text(worstClear_m.toFixed(1));
-            $readouts.find('span[data-readout="fresnel_clear_pct"]').text(worstPct.toFixed(0));
-
-            const $fresnelwarn = $('#fresnelwarn');
-            if (!isBlocked && isMarginal) $fresnelwarn.removeClass('d-none');
-            else $fresnelwarn.addClass('d-none');
 
             // Update status badge UI
             if (isBlocked) {
-                $statusContainer.removeClass('los-calculating los-clear los-marginal').addClass('los-blocked');
+                $statusContainer.removeClass('los-calculating los-clear').addClass('los-blocked');
                 $statusText.text('Blocked by Terrain');
                 MAP.lineofsight.setStyle({ color: '#fb7185' });
-            } else if (isMarginal) {
-                $statusContainer.removeClass('los-calculating los-clear los-blocked').addClass('los-marginal');
-                $statusText.text('Marginal - Fresnel Intruded');
-                MAP.lineofsight.setStyle({ color: '#f59e0b' });
             } else {
-                $statusContainer.removeClass('los-calculating los-blocked los-marginal').addClass('los-clear');
+                $statusContainer.removeClass('los-calculating los-blocked').addClass('los-clear');
                 $statusText.text('Clear Line-of-Sight');
                 MAP.lineofsight.setStyle({ color: '#34d399' });
             }
-            const linkBlocked = isBlocked;
 
             // Prepare chart points
             const terrainPoints = response.results.map((point, i) => {
@@ -853,25 +778,7 @@ function updateReadouts () {
                 };
             });
 
-            const fresnelPoints = response.results.map((point, i) => {
-                const fraction = i / (response.results.length - 1);
-                const d1 = lenstep * i;
-                const d2 = totalmeters - d1;
-                const losVal = transmit_total_m + (receive_total_m - transmit_total_m) * fraction;
-                const bulge = (d1 * d2) / (2 * EARTH_R_EFF_M);
-                const r1 = (d1 <= 0 || d2 <= 0 || totalmeters <= 0) ? 0 : Math.sqrt(lambda_m * d1 * d2 / totalmeters);
-                const fresVal = losVal - bulge - FRESNEL_CLEAR_FRACTION * r1;
-                return {
-                    x: i * lenstep / 1000.0,
-                    y: fresVal,
-                    distance_km: (i * lenstep / 1000.0).toFixed(1),
-                    distance_mi: (i * lenstep / 1609.43).toFixed(1),
-                    elevation_ft: Math.round(fresVal / FEET2METERS),
-                    elevation_m: Math.round(fresVal)
-                };
-            });
-
-            renderElevationProfile(terrainPoints, losPoints, linkBlocked, fresnelPoints, isMarginal);
+            renderElevationProfile(terrainPoints, losPoints, isBlocked);
             MAP.xmarker.setPopupContent(`<strong>Tx</strong><br>${xlat.toFixed(6)},${xlng.toFixed(6)}<br>Ground: ${Math.round(tx_ground_m)} m`);
             MAP.rmarker.setPopupContent(`<strong>Rx</strong><br>${rlat.toFixed(6)},${rlng.toFixed(6)}<br>Ground: ${Math.round(rx_ground_m)} m`);
             const emptyMsg = document.getElementById('profile-empty');
@@ -919,17 +826,16 @@ function updateReadouts () {
     }
 }
 
-function renderElevationProfile(terrainPoints, losPoints, isBlocked, fresnelPoints, isMarginal) {
+function renderElevationProfile(terrainPoints, losPoints, isBlocked) {
     if (window.Highcharts) {
-        renderHighchartsProfile(terrainPoints, losPoints, isBlocked, fresnelPoints, isMarginal);
+        renderHighchartsProfile(terrainPoints, losPoints, isBlocked);
         return;
     }
 
-    renderSvgElevationProfile(terrainPoints, losPoints, isBlocked, fresnelPoints, isMarginal);
+    renderSvgElevationProfile(terrainPoints, losPoints, isBlocked);
 }
 
-function renderHighchartsProfile(terrainPoints, losPoints, isBlocked, fresnelPoints, isMarginal) {
-    const linkColor = isBlocked ? '#fb7185' : (isMarginal ? '#f59e0b' : '#34d399');
+function renderHighchartsProfile(terrainPoints, losPoints, isBlocked) {
     Highcharts.setOptions({
         plotOptions: {
             series: {
@@ -984,25 +890,20 @@ function renderHighchartsProfile(terrainPoints, losPoints, isBlocked, fresnelPoi
             formatter: function () {
                 const terrainPoint = this.points.find(p => p.series.name === 'Terrain').point;
                 const losPoint = this.points.find(p => p.series.name === 'Line of Sight').point;
-                const fresPoint = this.points.find(p => p.series.name === '60% Fresnel');
-                const fresOpts = fresPoint ? fresPoint.point.options : null;
 
                 if (terrainPoint) {
                     MAP.tooltip.setLatLng([terrainPoint.lat, terrainPoint.lng])
                         .setContent(`<strong>Distance:</strong> ${terrainPoint.options.distance_km} km (${terrainPoint.options.distance_mi} mi)<br/>
                                      <strong>Terrain:</strong> ${terrainPoint.options.elevation_m} m (${terrainPoint.options.elevation_ft} ft)<br/>
-                                     <strong>LoS Path:</strong> ${losPoint ? losPoint.options.elevation_m : 0} m (${losPoint ? losPoint.options.elevation_ft : 0} ft)<br/>
-                                     <strong>60% Fresnel:</strong> ${fresOpts ? fresOpts.elevation_m : 0} m`)
+                                     <strong>LoS Path:</strong> ${losPoint ? losPoint.options.elevation_m : 0} m (${losPoint ? losPoint.options.elevation_ft : 0} ft)`)
                         .addTo(MAP);
                 }
 
                 let text = `<strong>Distance:</strong> ${terrainPoint.options.distance_km} km (${terrainPoint.options.distance_mi} mi)<br/>`;
                 text += `<span style="color:#22d3ee">\u25CF</span> Terrain: <b>${terrainPoint.options.elevation_m} m</b> (${terrainPoint.options.elevation_ft} ft)<br/>`;
                 if (losPoint) {
-                    text += `<span style="color:${linkColor}">\u25CF</span> LoS Path: <b>${losPoint.options.elevation_m} m</b> (${losPoint.options.elevation_ft} ft)<br/>`;
-                }
-                if (fresOpts) {
-                    text += `<span style="color:#f59e0b">\u25CF</span> 60% Fresnel: <b>${fresOpts.elevation_m} m</b> (${fresOpts.elevation_ft} ft)`;
+                    const color = isBlocked ? '#fb7185' : '#34d399';
+                    text += `<span style="color:${color}">\u25CF</span> LoS Path: <b>${losPoint.options.elevation_m} m</b> (${losPoint.options.elevation_ft} ft)`;
                 }
                 return text;
             }
@@ -1032,23 +933,9 @@ function renderHighchartsProfile(terrainPoints, losPoints, isBlocked, fresnelPoi
                 name: 'Line of Sight',
                 type: 'line',
                 data: losPoints,
-                color: linkColor,
+                color: isBlocked ? '#fb7185' : '#34d399',
                 lineWidth: 3,
                 dashStyle: 'Dash',
-                marker: { enabled: false },
-                events: {
-                    mouseOut: function () {
-                        MAP.tooltip.setLatLng([0, 0]).removeFrom(MAP);
-                    }
-                }
-            },
-            {
-                name: '60% Fresnel',
-                type: 'line',
-                data: fresnelPoints || [],
-                color: '#f59e0b',
-                lineWidth: 2,
-                dashStyle: 'Dot',
                 marker: { enabled: false },
                 events: {
                     mouseOut: function () {
@@ -1060,7 +947,7 @@ function renderHighchartsProfile(terrainPoints, losPoints, isBlocked, fresnelPoi
     });
 }
 
-function renderSvgElevationProfile(terrainPoints, losPoints, isBlocked, fresnelPoints, isMarginal) {
+function renderSvgElevationProfile(terrainPoints, losPoints, isBlocked) {
     const container = document.getElementById('elevationprofile');
     if (!container || !terrainPoints.length || !losPoints.length) return;
 
@@ -1070,20 +957,19 @@ function renderSvgElevationProfile(terrainPoints, losPoints, isBlocked, fresnelP
     const plotWidth = width - pad.left - pad.right;
     const plotHeight = height - pad.top - pad.bottom;
     const maxDistance = Math.max(...terrainPoints.map(point => point.x), 1);
-    const elevations = terrainPoints.concat(losPoints, fresnelPoints || []).map(point => point.y);
+    const elevations = terrainPoints.concat(losPoints).map(point => point.y);
     const minElevation = Math.min(...elevations);
     const maxElevation = Math.max(...elevations);
     const elevationRange = Math.max(maxElevation - minElevation, 1);
     const yMin = Math.floor((minElevation - elevationRange * 0.08) / 50) * 50;
     const yMax = Math.ceil((maxElevation + elevationRange * 0.08) / 50) * 50;
     const yRange = Math.max(yMax - yMin, 1);
-    const losColor = isBlocked ? '#fb7185' : (isMarginal ? '#f59e0b' : '#34d399');
+    const losColor = isBlocked ? '#fb7185' : '#34d399';
 
     const xFor = point => pad.left + (point.x / maxDistance) * plotWidth;
     const yFor = point => pad.top + ((yMax - point.y) / yRange) * plotHeight;
     const terrainLine = terrainPoints.map(point => `${xFor(point).toFixed(1)},${yFor(point).toFixed(1)}`).join(' ');
     const losLine = losPoints.map(point => `${xFor(point).toFixed(1)},${yFor(point).toFixed(1)}`).join(' ');
-    const fresLine = (fresnelPoints && fresnelPoints.length) ? fresnelPoints.map(point => `${xFor(point).toFixed(1)},${yFor(point).toFixed(1)}`).join(' ') : '';
     const areaPath = `M ${pad.left},${pad.top + plotHeight} L ${terrainLine.replaceAll(' ', ' L ')} L ${pad.left + plotWidth},${pad.top + plotHeight} Z`;
     const midElevation = Math.round((yMin + yMax) / 2);
 
@@ -1101,7 +987,6 @@ function renderSvgElevationProfile(terrainPoints, losPoints, isBlocked, fresnelP
             <path class="profile-area" d="${areaPath}" />
             <polyline class="profile-terrain" points="${terrainLine}" />
             <polyline class="profile-los" points="${losLine}" style="stroke:${losColor}" />
-            ${fresLine ? `<polyline class="profile-fresnel" points="${fresLine}" />` : ''}
             <text class="profile-label" x="${pad.left - 8}" y="${pad.top + 4}" text-anchor="end">${Math.round(yMax)} m</text>
             <text class="profile-label" x="${pad.left - 8}" y="${pad.top + plotHeight / 2 + 4}" text-anchor="end">${midElevation} m</text>
             <text class="profile-label" x="${pad.left - 8}" y="${pad.top + plotHeight + 4}" text-anchor="end">${Math.round(yMin)} m</text>
@@ -1112,8 +997,6 @@ function renderSvgElevationProfile(terrainPoints, losPoints, isBlocked, fresnelP
                 <text x="${pad.left + 14}" y="${pad.top + 16}">Terrain</text>
                 <circle cx="${pad.left + 86}" cy="${pad.top + 12}" r="4" fill="${losColor}" />
                 <text x="${pad.left + 96}" y="${pad.top + 16}">Line of sight</text>
-                <circle cx="${pad.left + 196}" cy="${pad.top + 12}" r="4" fill="#f59e0b" />
-                <text x="${pad.left + 206}" y="${pad.top + 16}">60% Fresnel</text>
             </g>
         </svg>
     `;
@@ -1134,9 +1017,8 @@ function updateAddressBar () {
 
     const xheight_ft = txUnit === 'm' ? Math.round(xheight_input / FEET2METERS) : xheight_input;
     const rheight_ft = rxUnit === 'm' ? Math.round(rheight_input / FEET2METERS) : rheight_input;
-    const freqMHz = clampFreqMHz($('input[name="freq"]').val() || DEFAULT_FREQ_MHZ);
 
-    document.location.hash = `${xlat},${xlng},${rlat},${rlng},${xheight_ft},${rheight_ft},${freqMHz}`;
+    document.location.hash = `${xlat},${xlng},${rlat},${rlng},${xheight_ft},${rheight_ft}`;
     try {
         const s = {
             x: $('input[name="xaddr"]').val(),
@@ -1145,8 +1027,7 @@ function updateAddressBar () {
             rh: $('input[name="rheight"]').val(),
             xu: txUnit,
             ru: rxUnit,
-            base: MAP._baseName || 'Topographic',
-            freq: freqMHz
+            base: MAP._baseName || 'Topographic'
         };
         localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
     } catch (e) {}
