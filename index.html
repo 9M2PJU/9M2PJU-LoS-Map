@@ -50,8 +50,8 @@
   <script src="https://code.jquery.com/jquery-3.7.1.min.js" crossorigin="anonymous"></script>
 
   <!-- Custom Styles -->
-  <link rel="stylesheet" href="index.css?v=2.5">
-  <script src="index.js?v=2.5" defer></script>
+  <link rel="stylesheet" href="index.css?v=2.6">
+  <script src="index.js?v=2.6" defer></script>
 </head>
 
 <body>
@@ -193,7 +193,10 @@
       </div>
 
       <footer class="app-footer">
-        <p>Maintained by <a href="https://hamradio.my" target="_blank" rel="noopener noreferrer">9M2PJU</a></p>
+        <p>Maintained by <a href="https://hamradio.my" target="_blank" rel="noopener noreferrer">9M2PJU</a>
+          <span class="footer-sep" aria-hidden="true">|</span>
+          <button type="button" id="btn-donate" class="btn-donate-link">Donate</button>
+        </p>
       </footer>
     </aside>
 
@@ -213,6 +216,47 @@
         <div id="profile-empty">Set both Tx and Rx to see terrain and line-of-sight here.</div>
       </section>
     </main>
+  </div>
+
+  <!-- Donation dialog -->
+  <div class="modal fade" id="donateModal" tabindex="-1" role="dialog" aria-modal="true"
+    aria-labelledby="donateModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content donate-modal">
+        <div class="modal-header">
+          <h5 class="modal-title" id="donateModalLabel">Support 9M2PJU</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+            aria-label="Close donation dialog"></button>
+        </div>
+        <div class="modal-body">
+          <p class="donate-lead">If these VHF/UHF path predictions helped you plan a link, a small
+            donation keeps the builds coming.</p>
+          <div class="donate-options">
+            <div class="donate-option">
+              <div class="donate-option-head">
+                <strong>Buy Me a Coffee</strong>
+                <span>@9m2pju</span>
+              </div>
+              <p>One-time coffee ($5) or monthly membership. Card, Apple Pay, Google Pay.</p>
+              <a class="btn btn-donate-bmc" href="https://www.buymeacoffee.com/9m2pju"
+                target="_blank" rel="noopener noreferrer">Donate via Buy Me a Coffee</a>
+            </div>
+            <div class="donate-option">
+              <div class="donate-option-head">
+                <strong>PayPal</strong>
+                <span>paypal.me/9M2PJU</span>
+              </div>
+              <p>Send any amount directly through PayPal.</p>
+              <a class="btn btn-donate-paypal" href="https://paypal.me/9M2PJU"
+                target="_blank" rel="noopener noreferrer">Donate via PayPal</a>
+            </div>
+          </div>
+          <p class="donate-local">Malaysians: DuitNow / TNG e-wallet QR available on the
+            <a href="https://www.buymeacoffee.com/9m2pju" target="_blank"
+              rel="noopener noreferrer">Buy Me a Coffee page</a>. Thank you!</p>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Highcharts Dark Theme Configuration -->

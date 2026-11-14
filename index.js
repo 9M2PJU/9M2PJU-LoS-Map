@@ -31,6 +31,7 @@ const LOOKS_LIKE_COORDS = /^(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)$/;
 
 const FEET2METERS = 0.3048;
 const STORAGE_KEY = 'los-map-state-v1';
+const DONATE_SEEN_KEY = 'los-donate-seen-v1';
 const ELEV_CACHE = {};
 const ELEV_CACHE_KEY = function(xlat, xlng, rlat, rlng) {
     return [xlat.toFixed(4), xlng.toFixed(4), rlat.toFixed(4), rlng.toFixed(4)].join('|');
@@ -497,6 +498,10 @@ $(document).ready(function () {
 
     MAP.on('baselayerchange', function(e) { MAP._baseName = e.name; saveState(); });
 
+    $('#btn-donate').click(function() {
+        showDonateModal();
+    });
+
     window.addEventListener('offline', function() { showToast('You are offline. Map tiles and search need a connection.'); });
     window.addEventListener('online', function() { showToast('Back online.', 'info'); });
 
@@ -628,6 +633,29 @@ $(document).ready(function () {
     }
     updateMapHint();
 });
+
+
+function showDonateModal() {
+    const el = document.getElementById('donateModal');
+    if (!el || !window.bootstrap) return false;
+    try {
+        bootstrap.Modal.getOrCreateInstance(el).show();
+        return true;
+    } catch (e) { return false; }
+}
+
+// Auto-popup once: after the first successful link calculation.
+// Dismissal is remembered globally in localStorage; the footer
+// Donate button reopens it anytime.
+function maybeShowDonate() {
+    if (maybeShowDonate.shown) return;
+    maybeShowDonate.shown = true;
+    try {
+        if (localStorage.getItem(DONATE_SEEN_KEY)) return;
+    } catch (e) {}
+    if (!showDonateModal()) return;
+    try { localStorage.setItem(DONATE_SEEN_KEY, '1'); } catch (e) {}
+}
 
 
 function geocodeAddress (address, successcallback, errorcallback) {
@@ -862,6 +890,7 @@ function updateReadouts () {
             });
 
             renderElevationProfile(terrainPoints, losPoints, isBlocked);
+            maybeShowDonate();
             MAP.xmarker.setPopupContent(`<strong>Tx</strong><br>${xlat.toFixed(6)},${xlng.toFixed(6)}<br>Ground: ${Math.round(tx_ground_m)} m`);
             MAP.rmarker.setPopupContent(`<strong>Rx</strong><br>${rlat.toFixed(6)},${rlng.toFixed(6)}<br>Ground: ${Math.round(rx_ground_m)} m`);
             const emptyMsg = document.getElementById('profile-empty');
