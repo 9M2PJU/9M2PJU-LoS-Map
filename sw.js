@@ -1,5 +1,5 @@
 // 9M2PJU Line-of-Sight Map - Service Worker
-const CACHE_NAME = 'los-map-v6';
+const CACHE_NAME = 'los-map-v7';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -57,6 +57,8 @@ self.addEventListener('fetch', (event) => {
 
   // For API calls (elevation, geocoding), always use network
   if (url.hostname.includes('open-elevation') || 
+      url.hostname.includes('opentopodata') ||
+      url.hostname.includes('amazonaws') ||
       url.hostname.includes('nominatim') ||
       url.hostname.includes('arcgisonline')) {
     event.respondWith(fetch(request));

@@ -36,6 +36,59 @@ const ELEV_CACHE_KEY = function(xlat, xlng, rlat, rlng) {
     return [xlat.toFixed(4), xlng.toFixed(4), rlat.toFixed(4), rlng.toFixed(4)].join('|');
 };
 
+// AWS Terrain Tiles (Terrarium): R*256 + G + B/256 - 32768, z12 ~38 m/px.
+const TERR_Z = 12;
+const TILE_CACHE = {};
+
+function lngLatToTile(lng, lat, z) {
+    const n = Math.pow(2, z);
+    const x = Math.floor((lng + 180) / 360 * n);
+    const latR = lat * Math.PI / 180;
+    const y = Math.floor((1 - Math.log(Math.tan(latR) + 1 / Math.cos(latR)) / Math.PI) / 2 * n);
+    return {
+        x: Math.min(Math.max(x, 0), n - 1),
+        y: Math.min(Math.max(y, 0), n - 1)
+    };
+}
+
+function loadTerrainTile(x, y) {
+    const key = TERR_Z + '/' + x + '/' + y;
+    if (!TILE_CACHE[key]) {
+        TILE_CACHE[key] = new Promise(function (resolve, reject) {
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            const timer = setTimeout(function () { reject(new Error('tile timeout')); }, 15000);
+            img.onload = function () {
+                clearTimeout(timer);
+                try {
+                    const c = document.createElement('canvas');
+                    c.width = 256;
+                    c.height = 256;
+                    c.getContext('2d', { willReadFrequently: true }).drawImage(img, 0, 0);
+                    resolve(c);
+                } catch (e) { reject(e); }
+            };
+            img.onerror = function () { clearTimeout(timer); reject(new Error('tile load error')); };
+            img.src = 'https://s3.amazonaws.com/elevation-tiles-prod/terrarium/' + key + '.png';
+        });
+        TILE_CACHE[key].catch(function () { delete TILE_CACHE[key]; });
+    }
+    return TILE_CACHE[key];
+}
+
+function elevFromTile(canvas, lng, lat) {
+    const n = Math.pow(2, TERR_Z);
+    const fx = (lng + 180) / 360 * n;
+    const latR = lat * Math.PI / 180;
+    const fy = (1 - Math.log(Math.tan(latR) + 1 / Math.cos(latR)) / Math.PI) / 2 * n;
+    const t = lngLatToTile(lng, lat, TERR_Z);
+    const px = Math.min(255, Math.max(0, Math.floor((fx - t.x) * 256)));
+    const py = Math.min(255, Math.max(0, Math.floor((fy - t.y) * 256)));
+    const d = canvas.getContext('2d').getImageData(px, py, 1, 1).data;
+    const e = d[0] * 256 + d[1] + d[2] / 256 - 32768;
+    return e < -430 ? 0 : e; // nodata/ocean pixels decode below Dead Sea level: treat as sea
+}
+
 // add to Leaflet LatLng the calculation of a compass heading
 L.LatLng.prototype.bearingTo = function(LatLng) {
     let d2r  = Math.PI / 180;
@@ -402,6 +455,13 @@ $(document).ready(function () {
         MAP.lineofsight.removeFrom(MAP);
         MAP._hasFitLink = false;
         $('#readouts').addClass('d-none');
+        try {
+            const charts = (window.Highcharts && Highcharts.charts) || [];
+            charts.forEach(function (c) {
+                if (c && c.renderTo && c.renderTo.id === 'elevationprofile') { c.destroy(); }
+            });
+        } catch (e) {}
+        document.getElementById('elevationprofile').innerHTML = '';
         const emptyMsg = document.getElementById('profile-empty');
         if (emptyMsg) emptyMsg.classList.remove('d-none');
         try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
@@ -652,6 +712,9 @@ function updateReadouts () {
     const $statusContainer = $('#los-status-container');
     $statusContainer.removeClass('los-clear los-blocked').addClass('los-calculating');
     $statusText.text('Calculating...');
+    clearElevChartError();
+    const emptyMsgStart = document.getElementById('profile-empty');
+    if (emptyMsgStart) emptyMsgStart.classList.add('d-none');
 
     // generate 50 points along the line
     const howmanypoints = 50;
@@ -671,9 +734,29 @@ function updateReadouts () {
     }
 
     const elevKey = ELEV_CACHE_KEY(xlat, xlng, rlat, rlng);
-    const locParam = points.map(p => `${p[0]},${p[1]}`).join('|');
+
+    function clearElevChartError() {
+        const err = document.querySelector('#elevationprofile .chart-error');
+        if (err) err.remove();
+    }
+
+    function showElevChartError() {
+        const container = document.getElementById('elevationprofile');
+        if (!container || container.querySelector('.chart-error')) return;
+        try {
+            const charts = (window.Highcharts && Highcharts.charts) || [];
+            charts.forEach(function (c) {
+                if (c && c.renderTo === container) { c.destroy(); }
+            });
+        } catch (e) {}
+        const div = document.createElement('div');
+        div.className = 'chart-error';
+        div.textContent = 'Elevation data unavailable. Check your connection, then tap the status badge above to retry.';
+        container.appendChild(div);
+    }
 
     function showElevOffline() {
+        showElevChartError();
         $statusContainer.removeClass('los-calculating').addClass('bg-secondary');
         $statusText.text('Elevation Offline - tap to retry');
         $statusContainer.css('cursor', 'pointer').off('click.retry').on('click.retry', function() {
@@ -785,26 +868,39 @@ function updateReadouts () {
             if (emptyMsg) emptyMsg.classList.add('d-none');
     }
 
-    function fetchOpenTopoFallback() {
-        $.ajax({
-            url: 'https://api.opentopodata.org/v1/srtm90m',
-            data: { locations: locParam },
-            timeout: 12000,
-            success: function (resp) {
-                if (!resp || !resp.results || !resp.results.length) { showElevOffline(); return; }
-                const norm = {
-                    results: resp.results.map(function(r) {
-                        return {
-                            elevation: r.elevation,
-                            latitude: r.location ? r.location.lat : 0,
-                            longitude: r.location ? r.location.lng : 0
-                        };
-                    })
+    // Elevation source: AWS Terrain Tiles (Terrarium encoding), z12 (~38 m/px).
+    // Both JSON elevation APIs are unusable from browsers: open-elevation
+    // returns 429 quota_exceeded anonymously, and opentopodata omits the
+    // CORS header so browsers block its responses. This S3 bucket sends
+    // Access-Control-Allow-Origin: * and needs no API key.
+    function fetchElevTerrarium() {
+        const jobs = points.map(function (p) {
+            const t = lngLatToTile(p[1], p[0], TERR_Z);
+            return loadTerrainTile(t.x, t.y).then(function (canvas) {
+                return {
+                    elevation: elevFromTile(canvas, p[1], p[0]),
+                    latitude: p[0],
+                    longitude: p[1]
                 };
-                ELEV_CACHE[elevKey] = norm;
-                handleElevResponse(norm);
-            },
-            error: showElevOffline
+            });
+        });
+        let done = false;
+        const timer = setTimeout(function () {
+            if (!done) { done = true; showElevOffline(); }
+        }, 25000);
+        Promise.all(jobs).then(function (results) {
+            if (done) return;
+            done = true;
+            clearTimeout(timer);
+            if (!results || !results.length) { showElevOffline(); return; }
+            const norm = { results: results };
+            ELEV_CACHE[elevKey] = norm;
+            handleElevResponse(norm);
+        }).catch(function () {
+            if (done) return;
+            done = true;
+            clearTimeout(timer);
+            showElevOffline();
         });
     }
 
@@ -812,17 +908,7 @@ function updateReadouts () {
         handleElevResponse(ELEV_CACHE[elevKey]);
         // Refresh distance and bearing from cache without network delay, then still update heights.
     } else {
-        $.ajax({
-            url: 'https://api.open-elevation.com/api/v1/lookup',
-            data: { locations: locParam },
-            timeout: 12000,
-            success: function (response) {
-                if (!response || !response.results || !response.results.length) { fetchOpenTopoFallback(); return; }
-                ELEV_CACHE[elevKey] = response;
-                handleElevResponse(response);
-            },
-            error: fetchOpenTopoFallback
-        });
+        fetchElevTerrarium();
     }
 }
 

@@ -26,7 +26,7 @@ A modern, high-precision **UHF/VHF Line-of-Sight Calculator** designed for amate
 - **Map Engine**: [Leaflet.js](https://leafletjs.com/) with Topographic Basemaps
 - **Data Visualization**: [Highcharts](https://www.highcharts.com/)
 - **Styling**: Bootstrap 5 + Custom Glassmorphism CSS
-- **Data Source**: [Open-Elevation API](https://open-elevation.com/)
+- **Data Source**: [AWS Terrain Tiles](https://registry.opendata.aws/terrain-tiles/) (Terrarium encoding, decoded in-browser, no API key)
 - **Geocoding**: [Nominatim (OpenStreetMap)](https://nominatim.org/)
 
 ---

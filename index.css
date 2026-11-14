@@ -630,6 +630,18 @@ h1 {
   text-align: center;
 }
 
+.chart-error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 150px;
+  padding: 20px;
+  color: #fda4af;
+  font-size: 0.86rem;
+  font-weight: 600;
+  text-align: center;
+}
+
 #map-hint:focus {
   outline: 2px solid var(--accent);
   outline-offset: 2px;

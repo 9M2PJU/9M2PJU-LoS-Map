@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### 🔧 Fixes
+- **Elevation profile restored**: replaced the dead browser elevation APIs (open-elevation returns 429 quota errors, opentopodata responses are blocked by CORS so the chart stayed blank) with AWS Terrain Tiles decoded in-browser. No API key needed.
+- **Visible error state**: if terrain data cannot be fetched, the chart area now says so with a retry hint instead of staying blank. The status badge tap-to-retry still applies.
+- **Clear resets chart**: clearing Tx/Rx now also clears the rendered profile instead of leaving a stale chart behind.
+- Moved `index.js` to load with `defer` and bumped the service worker cache so returning visitors pick up the new code.
+
 ## [2.0.0] - 2026-01-21
 
 ### ✨ New Features
