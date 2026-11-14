@@ -50,8 +50,8 @@
   <script src="https://code.jquery.com/jquery-3.7.1.min.js" crossorigin="anonymous"></script>
 
   <!-- Custom Styles -->
-  <link rel="stylesheet" href="index.css?v=2.2">
-  <script src="index.js?v=2.2"></script>
+  <link rel="stylesheet" href="index.css?v=2.4">
+  <script src="index.js?v=2.4"></script>
 </head>
 
 <body>
@@ -103,7 +103,11 @@
               <input type="text" name="xaddr" class="form-control"
                 id="xaddr" placeholder="Address or lat,lng" autocomplete="off">
               <button type="button" class="btn btn-outline-primary" name="xsearchgo">Find</button>
-              <button type="button" class="btn btn-icon btn-outline-secondary" name="xlocate" title="Use current location" aria-label="Use current location for transmitter">GPS</button>
+            </div>
+            <div class="field-error" id="xerror" role="alert"></div>
+            <div class="map-pick-row">
+              <button type="button" class="btn btn-outline-secondary btn-sm" name="xpick" aria-pressed="false">Pick on map</button>
+              <button type="button" class="btn btn-outline-secondary btn-sm" name="xlocate" title="Use current location" aria-label="Use current location for transmitter">Use GPS</button>
             </div>
             <label class="form-label" for="xheight">Mast height</label>
             <div class="input-group control-row">
@@ -121,6 +125,15 @@
             <button type="button" id="btn-swap" class="btn btn-outline-primary btn-swap" title="Swap locations">
               Swap
             </button>
+            <button type="button" id="btn-clear" class="btn btn-outline-secondary btn-swap" title="Clear both locations">
+              Clear
+            </button>
+            <button type="button" id="btn-zoomlink" class="btn btn-outline-secondary btn-swap" title="Zoom map to Tx-Rx link">
+              Zoom to link
+            </button>
+            <button type="button" id="btn-copylink" class="btn btn-outline-secondary btn-swap" title="Copy shareable link">
+              Copy link
+            </button>
           </div>
 
           <section class="card endpoint-card endpoint-rx">
@@ -133,7 +146,11 @@
               <input type="text" name="raddr" class="form-control"
                 id="raddr" placeholder="Address or lat,lng" autocomplete="off">
               <button type="button" class="btn btn-outline-primary" name="rsearchgo">Find</button>
-              <button type="button" class="btn btn-icon btn-outline-secondary" name="rlocate" title="Use current location" aria-label="Use current location for receiver">GPS</button>
+            </div>
+            <div class="field-error" id="rerror" role="alert"></div>
+            <div class="map-pick-row">
+              <button type="button" class="btn btn-outline-secondary btn-sm" name="rpick" aria-pressed="false">Pick on map</button>
+              <button type="button" class="btn btn-outline-secondary btn-sm" name="rlocate" title="Use current location" aria-label="Use current location for receiver">Use GPS</button>
             </div>
             <label class="form-label" for="rheight">Mast height</label>
             <div class="input-group control-row">
@@ -181,7 +198,11 @@
     </aside>
 
     <main class="main-content">
-      <div id="map"></div>
+      <div id="map-wrap">
+        <div id="map"></div>
+        <div id="map-hint">Search, use GPS, or tap Pick on map, then click the map to set Tx and Rx.</div>
+        <div id="app-toast" role="status" aria-live="polite"></div>
+      </div>
       
       <section id="elevation-container" class="card">
         <div class="chart-header">
@@ -189,6 +210,7 @@
           <span>Drag chart to zoom</span>
         </div>
         <div id="elevationprofile"></div>
+        <div id="profile-empty">Set both Tx and Rx to see terrain and line-of-sight here.</div>
       </section>
     </main>
   </div>

@@ -27,9 +27,14 @@ const BASE_MAPS = {
     })
 };
 
-const LOOKS_LIKE_COORDS = /^(\-?\d+\.\d+)\s*,(\s*\-?\d+\.\d+)$/;
+const LOOKS_LIKE_COORDS = /^(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)$/;
 
 const FEET2METERS = 0.3048;
+const STORAGE_KEY = 'los-map-state-v1';
+const ELEV_CACHE = {};
+const ELEV_CACHE_KEY = function(xlat, xlng, rlat, rlng) {
+    return [xlat.toFixed(4), xlng.toFixed(4), rlat.toFixed(4), rlng.toFixed(4)].join('|');
+};
 
 // add to Leaflet LatLng the calculation of a compass heading
 L.LatLng.prototype.bearingTo = function(LatLng) {
@@ -69,6 +74,30 @@ $(document).ready(function () {
     const $xlocate = $form.find('button[name="xlocate"]');
     const $rlocate = $form.find('button[name="rlocate"]');
     const $btnSwap = $('#btn-swap');
+    const $btnClear = $('#btn-clear');
+    const $btnZoomLink = $('#btn-zoomlink');
+    const $btnCopyLink = $('#btn-copylink');
+    const $xpick = $form.find('button[name="xpick"]');
+    const $rpick = $form.find('button[name="rpick"]');
+    const $xerror = $('#xerror');
+    const $rerror = $('#rerror');
+    const $mapWrap = $('#map-wrap');
+    const $mapHint = $('#map-hint');
+    const $toast = $('#app-toast');
+    let pickTarget = null;
+    let toastTimer = null;
+
+    function showToast(msg, kind) {
+        $toast.text(msg).removeClass('info').addClass('show');
+        if (kind === 'info') $toast.addClass('info');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(function() { $toast.removeClass('show'); }, 4200);
+    }
+
+    function showFieldError($el, msg) {
+        if (!msg) { $el.removeClass('show').text(''); return; }
+        $el.text(msg).addClass('show');
+    }
 
     //
     // basic setup of the map and the drag markers
@@ -76,10 +105,11 @@ $(document).ready(function () {
 
     MAP = L.map('map').setView([MAPSTART_LAT, MAPSTART_LNG], MAPSTART_ZOOM);
 
+    MAP._baseName = 'Topographic';
     MAP.basemap = BASE_MAPS.Topographic.addTo(MAP);
     L.control.layers(BASE_MAPS, null, {
         position: 'topright',
-        collapsed: false
+        collapsed: window.innerWidth < 992
     }).addTo(MAP);
 
     // Custom pulsing marker icons
@@ -101,12 +131,12 @@ $(document).ready(function () {
         title: "Transmitting location",
         draggable: true,
         icon: txIcon
-    });
+    }).bindTooltip('Tx', { permanent: true, direction: 'top', offset: [0, -14], className: 'marker-label' });
     MAP.rmarker = L.marker([0, 0], {
         title: "Receiving location",
         draggable: true,
         icon: rxIcon
-    });
+    }).bindTooltip('Rx', { permanent: true, direction: 'top', offset: [0, -14], className: 'marker-label' });
 
     MAP.xmarker.on('drag', function () {
         hideLineOfSight();
@@ -125,6 +155,49 @@ $(document).ready(function () {
         $raddr_input.val(`${lat.toFixed(6)},${lng.toFixed(6)}`).change();
     });
 
+    function setPickTarget(t) {
+        const prev = pickTarget;
+        pickTarget = t;
+        const isPicking = !!t;
+        $mapWrap.toggleClass('picking', isPicking);
+        $xpick.toggleClass('pick-active', t === 'tx').attr('aria-pressed', t === 'tx' ? 'true' : 'false');
+        $rpick.toggleClass('pick-active', t === 'rx').attr('aria-pressed', t === 'rx' ? 'true' : 'false');
+        if (t === 'tx') $mapHint.text('Pick mode: click the map to set Tx. Esc to cancel.');
+        else if (t === 'rx') $mapHint.text('Pick mode: click the map to set Rx. Esc to cancel.');
+        else updateMapHint();
+        if (isPicking) {
+            $mapHint.attr('tabindex', '-1').focus({ preventScroll: true });
+        } else if (prev && document.activeElement === $mapHint[0]) {
+            (prev === 'tx' ? $xpick : $rpick).focus({ preventScroll: true });
+        }
+    }
+
+    function updateMapHint() {
+        const hasTx = MAP.hasLayer(MAP.xmarker);
+        const hasRx = MAP.hasLayer(MAP.rmarker);
+        if (hasTx && hasRx) $mapHint.text('Drag markers or Pick on map to adjust. Click chart to inspect terrain.');
+        else $mapHint.text('Search, use GPS, or tap Pick on map, then click the map to set Tx and Rx.');
+    }
+
+    MAP.on('click', function (e) {
+        if (!pickTarget) return;
+        const v = `${e.latlng.lat.toFixed(6)},${e.latlng.lng.toFixed(6)}`;
+        if (pickTarget === 'tx') {
+            $xaddr_input.val(v).change();
+            setPickTarget('rx');
+        } else {
+            $raddr_input.val(v).change();
+            setPickTarget(null);
+        }
+    });
+
+    $(document).on('keydown', function (e) {
+        if (e.key === 'Escape' && pickTarget) setPickTarget(null);
+    });
+
+    $xpick.click(function () { setPickTarget(pickTarget === 'tx' ? null : 'tx'); });
+    $rpick.click(function () { setPickTarget(pickTarget === 'rx' ? null : 'rx'); });
+
     MAP.lineofsight = L.polyline([[0, 0], [0, 0]], {
         color: '#22d3ee',
         weight: 4,
@@ -139,21 +212,35 @@ $(document).ready(function () {
 
     $xaddr_input.change(function () {
         const address = $xaddr_input.val().trim();
+        if (!address) { showFieldError($xerror, ''); return; }
         const coordbits = address.match(LOOKS_LIKE_COORDS);
-        if (! coordbits) return;  // change() is to shift the marker, but only if the input looks like coordinates
+        if (! coordbits) return;  // not coords; wait for Find/geocode
+        showFieldError($xerror, '');
 
         const lat = parseFloat(coordbits[1]);
         const lng = parseFloat(coordbits[2]);
+        if (lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+            showFieldError($xerror, 'Coordinates out of range.');
+            return;
+        }
         placeTransmitMarker(lat, lng);
+        if (typeof updateMapHint === 'function') updateMapHint();
     });
     $raddr_input.change(function () {
         const address = $raddr_input.val().trim();
+        if (!address) { showFieldError($rerror, ''); return; }
         const coordbits = address.match(LOOKS_LIKE_COORDS);
-        if (! coordbits) return;  // change() is to shift the marker, but only if the input looks like coordinates
+        if (! coordbits) return;  // not coords; wait for Find/geocode
+        showFieldError($rerror, '');
 
         const lat = parseFloat(coordbits[1]);
         const lng = parseFloat(coordbits[2]);
+        if (lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+            showFieldError($rerror, 'Coordinates out of range.');
+            return;
+        }
         placeReceiveMarker(lat, lng);
+        if (typeof updateMapHint === 'function') updateMapHint();
     });
 
     $xaddr_input.keyup(function (event) {
@@ -189,7 +276,7 @@ $(document).ready(function () {
 
     $xaddr_go.click(function () {
         const address = $xaddr_input.val().trim();
-        if (! address) return;
+        if (! address) { showFieldError($xerror, 'Enter an address or lat,lng.'); return; }
 
         // if it looks like coordinates, skip geocoding; just trigger change()
         if (address.match(LOOKS_LIKE_COORDS)) return $xaddr_input.change();
@@ -197,20 +284,25 @@ $(document).ready(function () {
         toggleSearchLoading('xsearchgo', true);
         geocodeAddress(address, function (resultlist) {
             toggleSearchLoading('xsearchgo', false);
-            if (! resultlist || ! resultlist.length) return alert("Could not find that address.");
+            if (! resultlist || ! resultlist.length) {
+                showFieldError($xerror, 'Could not find that address.');
+                showToast('Tx: address not found.');
+                return;
+            }
 
             const lat = parseFloat(resultlist[0].lat);
             const lng = parseFloat(resultlist[0].lon);
             $xaddr_input.val(`${lat.toFixed(6)},${lng.toFixed(6)}`).change();
         }, function() {
             toggleSearchLoading('xsearchgo', false);
-            alert("Error connecting to geocoding service.");
+            showFieldError($xerror, 'Geocoding offline. Try lat,lng instead.');
+            showToast('Geocoding offline. Try lat,lng.');
         });
     });
 
     $raddr_go.click(function () {
         const address = $raddr_input.val().trim();
-        if (! address) return;
+        if (! address) { showFieldError($rerror, 'Enter an address or lat,lng.'); return; }
 
         // if it looks like coordinates, skip geocoding; just trigger change()
         if (address.match(LOOKS_LIKE_COORDS)) return $raddr_input.change();
@@ -218,21 +310,26 @@ $(document).ready(function () {
         toggleSearchLoading('rsearchgo', true);
         geocodeAddress(address, function (resultlist) {
             toggleSearchLoading('rsearchgo', false);
-            if (! resultlist || ! resultlist.length) return alert("Could not find that address.");
+            if (! resultlist || ! resultlist.length) {
+                showFieldError($rerror, 'Could not find that address.');
+                showToast('Rx: address not found.');
+                return;
+            }
 
             const lat = parseFloat(resultlist[0].lat);
             const lng = parseFloat(resultlist[0].lon);
             $raddr_input.val(`${lat.toFixed(6)},${lng.toFixed(6)}`).change();
         }, function() {
             toggleSearchLoading('rsearchgo', false);
-            alert("Error connecting to geocoding service.");
+            showFieldError($rerror, 'Geocoding offline. Try lat,lng instead.');
+            showToast('Geocoding offline. Try lat,lng.');
         });
     });
 
     // Locate Me (GPS) features
-    function handleLocate(inputEl) {
+    function handleLocate(inputEl, $errEl, label) {
         if (!navigator.geolocation) {
-            alert("Geolocation is not supported by your browser.");
+            showToast('Geolocation is not supported by this browser.');
             return;
         }
         
@@ -250,7 +347,8 @@ $(document).ready(function () {
                 $btn.prop('disabled', false);
             },
             (error) => {
-                alert("Unable to retrieve location: " + error.message);
+                showFieldError($errEl, 'Unable to retrieve location: ' + error.message);
+                showToast(label + ': ' + error.message);
                 $btn.text(originalText);
                 $btn.prop('disabled', false);
             },
@@ -259,11 +357,11 @@ $(document).ready(function () {
     }
 
     $xlocate.click(function() {
-        handleLocate.call(this, $xaddr_input);
+        handleLocate.call(this, $xaddr_input, $xerror, 'Tx');
     });
 
     $rlocate.click(function() {
-        handleLocate.call(this, $raddr_input);
+        handleLocate.call(this, $raddr_input, $rerror, 'Rx');
     });
 
     // Swap locations
@@ -293,6 +391,54 @@ $(document).ready(function () {
         $xaddr_input.change();
         $raddr_input.change();
     });
+
+    $btnClear.click(function() {
+        $xaddr_input.val('');
+        $raddr_input.val('');
+        showFieldError($xerror, '');
+        showFieldError($rerror, '');
+        MAP.xmarker.removeFrom(MAP);
+        MAP.rmarker.removeFrom(MAP);
+        MAP.lineofsight.removeFrom(MAP);
+        MAP._hasFitLink = false;
+        $('#readouts').addClass('d-none');
+        const emptyMsg = document.getElementById('profile-empty');
+        if (emptyMsg) emptyMsg.classList.remove('d-none');
+        try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
+        document.location.hash = '';
+        setPickTarget('tx');
+        updateMapHint();
+        showToast('Cleared. Pick Tx on the map to start again.', 'info');
+    });
+
+    $btnZoomLink.click(function() {
+        if (MAP.hasLayer(MAP.xmarker) && MAP.hasLayer(MAP.rmarker)) {
+            MAP.fitBounds(MAP.lineofsight.getBounds().pad(0.25));
+        } else {
+            showToast('Set both Tx and Rx first.', 'info');
+        }
+    });
+
+    $btnCopyLink.click(function() {
+        const url = document.location.href;
+        function done() { showToast('Link copied.', 'info'); }
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(url).then(done, function() { showToast('Copy failed. Copy the URL manually.'); });
+        } else {
+            const ta = document.createElement('textarea');
+            ta.value = url;
+            document.body.appendChild(ta);
+            ta.select();
+            try { document.execCommand('copy'); done(); }
+            catch (e) { showToast('Copy failed. Copy the URL manually.'); }
+            document.body.removeChild(ta);
+        }
+    });
+
+    MAP.on('baselayerchange', function(e) { MAP._baseName = e.name; saveState(); });
+
+    window.addEventListener('offline', function() { showToast('You are offline. Map tiles and search need a connection.'); });
+    window.addEventListener('online', function() { showToast('Back online.', 'info'); });
 
     // Unit toggle helpers
     function setUnitVisual(type, targetUnit) {
@@ -358,6 +504,46 @@ $(document).ready(function () {
     // if there is a hash with xlat,xlng,rlat,rlng then fill the search boxes and submit them now
     // yeah, you can share a line just by sharing the URL
     //
+    function saveState() {
+        try {
+            const s = {
+                x: $xaddr_input.val(),
+                r: $raddr_input.val(),
+                xh: $xheight.val(),
+                rh: $rheight.val(),
+                xu: txUnit,
+                ru: rxUnit,
+                base: MAP._baseName || 'Topographic'
+            };
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
+        } catch (e) {}
+    }
+
+    function applyBasemap(name) {
+        if (!name || !BASE_MAPS[name] || MAP._baseName === name) return;
+        if (MAP.basemap) MAP.removeLayer(MAP.basemap);
+        MAP._baseName = name;
+        MAP.basemap = BASE_MAPS[name].addTo(MAP);
+    }
+
+    function loadStoredState() {
+        try {
+            const raw = localStorage.getItem(STORAGE_KEY);
+            if (!raw) return false;
+            const s = JSON.parse(raw);
+            if (!s || (!s.x && !s.r)) return false;
+            txUnit = s.xu === 'm' ? 'm' : 'ft';
+            rxUnit = s.ru === 'm' ? 'm' : 'ft';
+            setUnitVisual('x', txUnit);
+            setUnitVisual('r', rxUnit);
+            if (s.xh !== undefined) $xheight.val(s.xh);
+            if (s.rh !== undefined) $rheight.val(s.rh);
+            if (s.base) applyBasemap(s.base);
+            if (s.x) $xaddr_input.val(s.x).change();
+            if (s.r) $raddr_input.val(s.r).change();
+            return true;
+        } catch (e) { return false; }
+    }
 
     if (document.location.hash) {
         const coords = document.location.hash.replace(/^#/, '').split(',').map(i => parseFloat(i));
@@ -377,35 +563,41 @@ $(document).ready(function () {
             $raddr_input.val(`${coords[2]},${coords[3]}`).change();
         }
     }
+    else {
+        loadStoredState();
+    }
+    updateMapHint();
 });
 
 
 function geocodeAddress (address, successcallback, errorcallback) {
-    $.ajax({
-        url: 'https://nominatim.openstreetmap.org/search',
-        'data': {
-            q: address,
-            format: 'json',
-            limit: 1,
-        },
-        dataType: 'jsonp',
-        jsonp: 'json_callback',
-        success: successcallback,
-        error: errorcallback,
-        timeout: 8000,
-        crossDomain: true
-    });
+    const url = 'https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' + encodeURIComponent(address);
+    const ctrl = new AbortController();
+    const timer = setTimeout(function() { ctrl.abort(); }, 8000);
+    fetch(url, { signal: ctrl.signal, headers: { 'Accept': 'application/json' } })
+        .then(function(res) {
+            clearTimeout(timer);
+            if (!res.ok) throw new Error('geocode ' + res.status);
+            return res.json();
+        })
+        .then(function(json) { successcallback(json); })
+        .catch(function(err) {
+            clearTimeout(timer);
+            errorcallback(err);
+        });
 }
 
 
 function placeTransmitMarker (lat, lng) {
     MAP.xmarker.setLatLng([lat, lng]).addTo(MAP);
+    MAP.xmarker.bindPopup(`<strong>Tx</strong><br>${lat.toFixed(6)},${lng.toFixed(6)}`);
     if (MAP.hasLayer(MAP.xmarker) && MAP.hasLayer(MAP.rmarker)) updateTheLine();
 }
 
 
 function placeReceiveMarker (lat, lng) {
     MAP.rmarker.setLatLng([lat, lng]).addTo(MAP);
+    MAP.rmarker.bindPopup(`<strong>Rx</strong><br>${lat.toFixed(6)},${lng.toFixed(6)}`);
     if (MAP.hasLayer(MAP.xmarker) && MAP.hasLayer(MAP.rmarker)) updateTheLine();
 }
 
@@ -428,7 +620,12 @@ function placeLineOfSight () {
         MAP.rmarker.getLatLng()
     ];
     MAP.lineofsight.setLatLngs(points).addTo(MAP);
-    MAP.fitBounds(MAP.lineofsight.getBounds().pad(0.25));
+    const bounds = MAP.lineofsight.getBounds().pad(0.25);
+    // Preserve user zoom: only fit when link is outside current view or first link.
+    if (!MAP._hasFitLink || !MAP.getBounds().contains(bounds)) {
+        MAP.fitBounds(bounds);
+        MAP._hasFitLink = true;
+    }
 }
 
 
@@ -473,15 +670,21 @@ function updateReadouts () {
         points.push([lat, lng, m]);
     }
 
-    $.ajax({
-        url: 'https://api.open-elevation.com/api/v1/lookup',
-        'data': {
-            locations: points.map(p => `${p[0]},${p[1]}`).join('|'),
-        },
-        success: function (response) {
+    const elevKey = ELEV_CACHE_KEY(xlat, xlng, rlat, rlng);
+    const locParam = points.map(p => `${p[0]},${p[1]}`).join('|');
+
+    function showElevOffline() {
+        $statusContainer.removeClass('los-calculating').addClass('bg-secondary');
+        $statusText.text('Elevation Offline - tap to retry');
+        $statusContainer.css('cursor', 'pointer').off('click.retry').on('click.retry', function() {
+            $statusContainer.css('cursor', '');
+            updateReadouts();
+        });
+    }
+
+    function handleElevResponse(response) {
             if (!response || !response.results || response.results.length === 0) {
-                $statusContainer.removeClass('los-calculating').addClass('bg-secondary');
-                $statusText.text('Elevation Error');
+                showElevOffline();
                 return;
             }
 
@@ -576,12 +779,51 @@ function updateReadouts () {
             });
 
             renderElevationProfile(terrainPoints, losPoints, isBlocked);
-        },
-        error: function() {
-            $statusContainer.removeClass('los-calculating').addClass('bg-secondary');
-            $statusText.text('Elevation Offline');
-        }
-    });
+            MAP.xmarker.setPopupContent(`<strong>Tx</strong><br>${xlat.toFixed(6)},${xlng.toFixed(6)}<br>Ground: ${Math.round(tx_ground_m)} m`);
+            MAP.rmarker.setPopupContent(`<strong>Rx</strong><br>${rlat.toFixed(6)},${rlng.toFixed(6)}<br>Ground: ${Math.round(rx_ground_m)} m`);
+            const emptyMsg = document.getElementById('profile-empty');
+            if (emptyMsg) emptyMsg.classList.add('d-none');
+    }
+
+    function fetchOpenTopoFallback() {
+        $.ajax({
+            url: 'https://api.opentopodata.org/v1/srtm90m',
+            data: { locations: locParam },
+            timeout: 12000,
+            success: function (resp) {
+                if (!resp || !resp.results || !resp.results.length) { showElevOffline(); return; }
+                const norm = {
+                    results: resp.results.map(function(r) {
+                        return {
+                            elevation: r.elevation,
+                            latitude: r.location ? r.location.lat : 0,
+                            longitude: r.location ? r.location.lng : 0
+                        };
+                    })
+                };
+                ELEV_CACHE[elevKey] = norm;
+                handleElevResponse(norm);
+            },
+            error: showElevOffline
+        });
+    }
+
+    if (ELEV_CACHE[elevKey] && ELEV_CACHE[elevKey].results.length === points.length) {
+        handleElevResponse(ELEV_CACHE[elevKey]);
+        // Refresh distance and bearing from cache without network delay, then still update heights.
+    } else {
+        $.ajax({
+            url: 'https://api.open-elevation.com/api/v1/lookup',
+            data: { locations: locParam },
+            timeout: 12000,
+            success: function (response) {
+                if (!response || !response.results || !response.results.length) { fetchOpenTopoFallback(); return; }
+                ELEV_CACHE[elevKey] = response;
+                handleElevResponse(response);
+            },
+            error: fetchOpenTopoFallback
+        });
+    }
 }
 
 function renderElevationProfile(terrainPoints, losPoints, isBlocked) {
@@ -777,4 +1019,16 @@ function updateAddressBar () {
     const rheight_ft = rxUnit === 'm' ? Math.round(rheight_input / FEET2METERS) : rheight_input;
 
     document.location.hash = `${xlat},${xlng},${rlat},${rlng},${xheight_ft},${rheight_ft}`;
+    try {
+        const s = {
+            x: $('input[name="xaddr"]').val(),
+            r: $('input[name="raddr"]').val(),
+            xh: $('input[name="xheight"]').val(),
+            rh: $('input[name="rheight"]').val(),
+            xu: txUnit,
+            ru: rxUnit,
+            base: MAP._baseName || 'Topographic'
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
+    } catch (e) {}
 }
